@@ -9,7 +9,13 @@ For PRs or issues, head over to the [source repository](https://github.com/Ashla
 
 ### Installation
 
-    yarn add binance-api-node
+```
+npm install binance-api-node
+```
+[![NPM](https://nodei.co/npm/binance-api-node.png?compact=false)](https://npmjs.org/package/binance-api-node)
+<!-- [![npm install binance-api-node](https://nodei.co/npm/binance-api-node.png?mini=true)](https://npmjs.org/package/binance-api-node) -->
+
+**This project is powered by** <a href="https://github.com/ccxt/ccxt"><img src="https://avatars.githubusercontent.com/u/31901609" width=4% height=4%></a>
 
 ### Getting started
 
