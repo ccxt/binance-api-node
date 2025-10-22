@@ -33,6 +33,10 @@ const getDomainName = url => {
 
 const defaultGetTime = () => Date.now()
 
+const uuid22 = (a) => {
+        return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : (([1e7]) + 1e3 + 4e3 + 8e5).replace(/[018]/g,  uuid22);
+}
+
 // Singleton holding header data like rate limits.
 const info = {}
 
@@ -120,6 +124,14 @@ const checkParams = (name, payload, requires = []) => {
   })
 
   return true
+}
+
+const spotP = () => {
+  return `x-B3AUXNYV${uuid22()}`
+}
+
+const futuresP = () => {
+  return `x-ftGmvgAN${uuid22()}`
 }
 
 /**
@@ -250,6 +262,13 @@ const candles = (pubCall, payload, endpoint = '/api/v3/klines') =>
     ),
   )
 
+const isContractURL = (path) => {
+  const isFutures = path.includes('/fapi') || path.includes('/futures');
+  const isDelivery = path.includes('/dapi');
+  const isPortfolioMargin = path.includes('/papi');
+  return isFutures || isDelivery || isPortfolioMargin;
+}
+
 /**
  * Create a new order wrapper for market order simplicity
  */
@@ -274,6 +293,16 @@ const order = (privCall, payload = {}, url) => {
     requires.push('callbackRate')
   }
 
+  if (!newPayload.newClientOrderId) {
+     // check if this is spot or futures/delivery
+      const isContract = isContractURL(url);
+      if (isContract) {
+        newPayload.newClientOrderId = futuresP();
+      } else {
+        newPayload.newClientOrderId = spotP();
+      }
+  }
+
   return (
     checkParams('order', newPayload, requires) &&
     privCall(url, { type: 'LIMIT', ...newPayload }, 'POST')
@@ -285,6 +314,10 @@ const orderOco = (privCall, payload = {}, url) => {
     payload.stopLimitPrice && !payload.stopLimitTimeInForce
       ? { stopLimitTimeInForce: 'GTC', ...payload }
       : payload
+
+    if (!newPayload.listClientOrderId) {
+      newPayload.listClientOrderId = spotP();
+    }
 
   return (
     checkParams('order', newPayload, ['symbol', 'side', 'quantity', 'price', 'stopPrice']) &&

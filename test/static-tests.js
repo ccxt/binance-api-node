@@ -158,6 +158,8 @@ test.serial('[REST] Futures CancelOrder', async t => {
     t.is(obj.orderId, '34234234')
 })
 
+const CONTRACT_PREFIX = "x-ftGmvgAN"
+const SPOT_PREFIX = "x-B3AUXNYV"
 
 test.serial('[REST] MarketBuy', async t => {
     await binance.order({ symbol: 'LTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.5 })
@@ -168,6 +170,7 @@ test.serial('[REST] MarketBuy', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
 
 test.serial('[REST] MarketSell', async t => {
@@ -179,6 +182,8 @@ test.serial('[REST] MarketSell', async t => {
     t.is(obj.side, 'SELL')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
+
 })
 
 test.serial('[REST] LimitBuy', async t => {
@@ -190,6 +195,7 @@ test.serial('[REST] LimitBuy', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'LIMIT')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
 
 test.serial('[REST] LimitSell', async t => {
@@ -201,6 +207,7 @@ test.serial('[REST] LimitSell', async t => {
     t.is(obj.side, 'SELL')
     t.is(obj.type, 'LIMIT')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
 
 
@@ -212,6 +219,7 @@ test.serial('[REST] Futures MarketBuy', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
 
 test.serial('[REST] Futures MarketSell', async t => {
@@ -222,6 +230,7 @@ test.serial('[REST] Futures MarketSell', async t => {
     t.is(obj.side, 'SELL')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
 
 test.serial('[REST] Futures LimitBuy', async t => {
@@ -242,6 +251,7 @@ test.serial('[REST] Futures LimitSell', async t => {
     t.is(obj.side, 'SELL')
     t.is(obj.type, 'LIMIT')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
 
 
@@ -263,6 +273,7 @@ test.serial('[REST] MarketBuy test', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
 
 test.serial('[REST] spot open orders', async t => {
@@ -284,4 +295,56 @@ test.serial('[REST] Margin MarketBuy order', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
+})
+
+test.serial('[REST] spot order with custom clientorderId', async t => {
+    await binance.order({
+        symbol: 'LTCUSDT',
+        side: 'BUY',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+        newClientOrderId: 'myid'
+    })
+    t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order'))
+    const body = interceptedUrl.replace('https://api.binance.com/api/v3/order', '')
+    const obj = urlToObject(body)
+    t.is(obj.symbol, 'LTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'LIMIT')
+    t.is(obj.quantity, '0.5')
+    t.is(obj.price, '100')
+    t.is(obj.newClientOrderId, 'myid')
+})
+
+
+test.serial('[REST] delivery OrderBook', async t => {
+    try {
+        await binance.deliveryBook({ symbol: 'BTCUSD_PERP' })
+    } catch (e) {
+        // it can throw an error because of the mocked response
+    }
+    t.is(interceptedUrl, 'https://dapi.binance.com/dapi/v1/depth?symbol=BTCUSD_PERP')
+})
+
+test.serial('[REST] futures set leverage', async t => {
+    try {
+        await binance.futuresLeverage({ symbol: 'BTCUSDT', leverage: 5 })
+    } catch (e) {
+        // it can throw an error because of the mocked response
+    }
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/leverage?symbol=BTCUSDT&leverage=5'))
+})
+
+
+test.serial('[REST] delivery MarketBuy', async t => {
+    await binance.deliveryOrder({ symbol: 'BTCUSD_PERP', side: 'BUY', type: 'MARKET', quantity: 0.1 })
+    t.true(interceptedUrl.startsWith('https://dapi.binance.com/dapi/v1/order'))
+    const obj = urlToObject(interceptedUrl.replace('https://dapi.binance.com/dapi/v1/order', ''))
+    t.is(obj.symbol, 'BTCUSD_PERP')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'MARKET')
+    t.is(obj.quantity, '0.1')
+    t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
