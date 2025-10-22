@@ -4,7 +4,7 @@ import Binance from 'index'
 
 import { checkFields } from '../utils'
 
-const client = Binance({proxy: "http://188.245.226.105:8911"})
+const client = Binance({ proxy: 'http://188.245.226.105:8911' })
 
 // Note: Liquidation streams are skipped as they may not always have active liquidations to test
 
