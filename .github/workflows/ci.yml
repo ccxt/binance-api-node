@@ -14,7 +14,7 @@ jobs:
 
       - uses: actions/cache@v4
         with:
-          path: '**/node_modules'
+          path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
@@ -24,12 +24,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y openvpn
-          
+
       - name: Download IVPN config
         run: |
           wget -O ivpn-config.zip "https://api.ivpn.net/v5/config/ivpn-openvpn-config.zip?country=NL&city=Amsterdam&proto=udp&port=2049"
           unzip ivpn-config.zip
-          
+
       - name: Start IVPN connection
         run: |
           echo "${{ secrets.IVPN_ACCOUNT_NUMBER }}" > auth.txt
@@ -39,9 +39,15 @@ jobs:
 
       - name: Run typecheck
         run: npm run typecheck
+      - name: Lint and Prettier
+        run: npm run lint && npm run prettier:check
+      - name: Static Tests
+        run: npm run static-tests
+      - name: All Tests
+        run: npm test
 
-      - name: Run checks
-        run: npm run ci
+      # - name: Run checks
+      #   run: npm run ci
 
       - name: Cleanup VPN
         if: always()

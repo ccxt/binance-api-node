@@ -14,10 +14,12 @@
     "cover": "nyc ava",
     "report": "npm run cover && nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint src",
+    "static-tests": "ava test/static-tests.js",
     "prettier": "prettier --write '{src,test}/**/*.{ts,js}'",
     "prettier:check": "prettier -l '{src,test}/**/*.{ts,js}'",
     "ci": "npm run lint && npm run prettier:check && npm run test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "publishPackage": "npm run build && sh publish.sh && git push && git push --tags && npm publish"
   },
   "dependencies": {
     "https-proxy-agent": "^5.0.0",
