@@ -43,6 +43,7 @@
     "eslint": "^6.7.1",
     "eslint-config-prettier": "^6.7.0",
     "eslint-config-zavatta": "^6.0.3",
+    "nock": "^14.0.10",
     "nyc": "^14.1.1",
     "prettier": "^3.5.3",
     "ts-node": "^10.9.1",
