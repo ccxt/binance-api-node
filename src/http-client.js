@@ -249,7 +249,12 @@ const order = (privCall, payload = {}, url) => {
       ? { timeInForce: 'GTC', ...payload }
       : payload
 
+  if (['STOP_MARKET', 'TAKE_PROFIT_MARKET'].includes(newPayload.type)) {
+    newPayload.timeInForce = "GTE_GTC"
+  }
+
   const requires = ['symbol', 'side']
+  
 
   if (
     !(newPayload.type === 'MARKET' && newPayload.quoteOrderQty) &&
