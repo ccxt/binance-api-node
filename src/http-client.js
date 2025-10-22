@@ -6,7 +6,17 @@ import JSONbig from 'json-bigint'
 import 'isomorphic-fetch'
 
 const getEndpoint = (endpoints, path, testnet) => {
-  if (testnet) return 'https://testnet.binancefuture.com'
+
+  const isFutures = path.includes('/fapi') || path.includes('/futures');
+  const isDelivery = path.includes('/dapi');
+  const isPortfolioMargin = path.includes('/papi');
+
+  if (testnet) {
+    if (isFutures) return "https://demo-fapi.binance.com"
+    if (isDelivery) return "https://demo-dapi.binance.com"
+    if (isPortfolioMargin) return "https://demo-papi.binance.com"
+    return "https://demo-api.binance.com"
+  }
 
   if (path.includes('/fapi') || path.includes('/futures'))
     return endpoints.futures || 'https://fapi.binance.com'
