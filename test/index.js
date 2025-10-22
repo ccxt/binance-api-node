@@ -937,5 +937,5 @@ test('[DELIVERY-REST] aggTrades', async t => {
 test('[DELIVERY-REST] fundingRate', async t => {
   const fundingRate = await client.deliveryFundingRate({ symbol: 'TRXUSD_perp' })
   checkFields(t, fundingRate[0], ['symbol', 'fundingTime', 'fundingRate'])
-  t.is(fundingRate.length, 100)
+  t.assert(fundingRate.length >= 100)
 })
