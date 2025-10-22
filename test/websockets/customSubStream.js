@@ -2,7 +2,7 @@ import test from 'ava'
 
 import Binance from 'index'
 
-const client = Binance()
+const client = Binance({proxy: "http://188.245.226.105:8911"})
 
 test('[WS] customSubStream - single stream', t => {
     return new Promise(resolve => {

@@ -6,7 +6,7 @@ import { userEventHandler } from 'websocket'
 
 import { checkFields, createHttpServer } from './utils'
 
-const client = Binance()
+const client = Binance({proxy: "http://188.245.226.105:8911"})
 
 test('[MISC] Some error codes are defined', t => {
     t.truthy(ErrorCodes, 'The map is there')

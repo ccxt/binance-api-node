@@ -4,7 +4,7 @@ import Binance from 'index'
 
 import { checkFields } from '../utils'
 
-const client = Binance()
+const client = Binance({proxy: "http://188.245.226.105:8911"})
 
 test('[WS] ticker - single symbol', t => {
     return new Promise(resolve => {
