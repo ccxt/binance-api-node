@@ -667,6 +667,8 @@ export default opts => {
         marginMyTrades: payload => privCall('/sapi/v1/margin/myTrades', payload),
         marginRepay: payload => privCall('/sapi/v1/margin/repay', payload, 'POST'),
         marginLoan: payload => privCall('/sapi/v1/margin/loan', payload, 'POST'),
+        marginCapitalFlow: payload => privCall('/sapi/v1/margin/capital-flow', payload),
+        marginInterestHistory: payload => privCall('/sapi/v1/margin/interestHistory', payload),
         marginIsolatedAccount: payload => privCall('/sapi/v1/margin/isolated/account', payload),
         marginMaxBorrow: payload => privCall('/sapi/v1/margin/maxBorrowable', payload),
         marginCreateIsolated: payload =>
@@ -679,6 +681,8 @@ export default opts => {
             privCall('/sapi/v1/margin/isolated/account', payload, 'DELETE'),
         enableMarginAccount: payload =>
             privCall('/sapi/v1/margin/isolated/account', payload, 'POST'),
+        isolatedMarginAllPairs: payload => privCall('/sapi/v1/margin/isolated/allPairs', payload),
+        isolatedMarginAccount: payload => privCall('/sapi/v1/margin/isolated/account', payload),
         marginAccount: () => privCall('/sapi/v1/margin/account'),
 
         // Portfolio Margin endpoints
