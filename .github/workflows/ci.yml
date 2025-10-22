@@ -15,10 +15,10 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
-        run: yarn
+        run: npm install
 
       - name: Install OpenVPN
         run: |
@@ -38,10 +38,10 @@ jobs:
           sleep 10  # Wait for VPN to establish
 
       - name: Run typecheck
-        run: yarn typecheck
+        run: npm run typecheck
 
       - name: Run checks
-        run: yarn ci
+        run: npm run ci
 
       - name: Cleanup VPN
         if: always()
