@@ -9,14 +9,14 @@
   ],
   "scripts": {
     "build": "rm -rf dist && babel src -d dist",
-    "prepare": "yarn build",
+    "prepare": "npm run build",
     "test": "ava --timeout=10s -v",
     "cover": "nyc ava",
-    "report": "yarn cover && nyc report --reporter=text-lcov | coveralls",
+    "report": "npm run cover && nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint src",
     "prettier": "prettier --write '{src,test}/**/*.{ts,js}'",
     "prettier:check": "prettier -l '{src,test}/**/*.{ts,js}'",
-    "ci": "yarn lint && yarn prettier:check && yarn test",
+    "ci": "npm run lint && npm run prettier:check && npm run test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -52,7 +52,7 @@
     "isomorphic-fetch/node-fetch": "2.6.1"
   },
   "engines": {
-    "yarn": ">= 1.0.0"
+    "npm": ">= 6.0.0"
   },
   "ava": {
     "require": [
