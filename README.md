@@ -2129,14 +2129,16 @@ console.log(await client.withdrawHistory())
 
 #### withdraw
 
-Triggers the withdraw process (_untested for now_).
+Triggers the withdraw process.
 
 ```js
 console.log(
   await client.withdraw({
-    asset: 'ETH',
+    coin: 'ETH',
+    network: 'ETH',
     address: '0xfa97c22a03d8522988c709c24283c0918a59c795',
     amount: 100,
+    // addressTag: '' // MEMO
   }),
 )
 ```
