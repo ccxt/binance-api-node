@@ -1,76 +1,74 @@
 import test from 'ava'
-import nock from 'nock';
+import nock from 'nock'
 import Binance, { ErrorCodes } from 'index'
 
 // Warning: For now these tests can't run in parallel due to nock interceptors
 const binance = Binance({
     apiKey: 'testkey',
-    apiSecret: 'test'
+    apiSecret: 'test',
 })
 const demoBinance = Binance({
     testnet: true,
-});
+})
 
 function urlToObject(queryString) {
-    const params = new URLSearchParams(queryString);
-    const obj = Object.fromEntries(params.entries());
-    return obj;
+    const params = new URLSearchParams(queryString)
+    const obj = Object.fromEntries(params.entries())
+    return obj
 }
 
-
-let interceptedUrl = null;
-let interceptedBody = null;
+let interceptedUrl = null
+let interceptedBody = null
 
 test.serial.beforeEach(t => {
-    interceptedUrl = null;
-    interceptedBody = null;
+    interceptedUrl = null
+    interceptedBody = null
     nock(/.*/)
         .get(/.*/)
         .reply(200, function (uri, requestBody) {
-            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`;
-            interceptedBody = requestBody;
-            return { success: true };
-        });
+            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
+            interceptedBody = requestBody
+            return { success: true }
+        })
     nock(/.*/)
         .post(/.*/)
         .reply(200, function (uri, requestBody) {
-            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`;
-            interceptedBody = requestBody;
-            return { success: true };
-        });
+            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
+            interceptedBody = requestBody
+            return { success: true }
+        })
     nock(/.*/)
         .delete(/.*/)
         .reply(200, function (uri, requestBody) {
-            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`;
-            interceptedBody = requestBody;
-            return { success: true };
-        });
-});
+            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
+            interceptedBody = requestBody
+            return { success: true }
+        })
+})
 
 test.serial('[Rest] Spot demo url', async t => {
-    await demoBinance.time();
+    await demoBinance.time()
     t.is(interceptedUrl, 'https://demo-api.binance.com/api/v3/time')
 })
 
 test.serial('[Rest] Futures demo url', async t => {
-    await demoBinance.futuresTime();
+    await demoBinance.futuresTime()
     t.is(interceptedUrl, 'https://demo-fapi.binance.com/fapi/v1/time')
 })
 
 test.serial('[REST] Prices no symbol', async t => {
-    await binance.prices();
+    await binance.prices()
     t.is(interceptedUrl, 'https://api.binance.com/api/v3/ticker/price')
 })
 
 test.serial('[REST] Futures Prices no symbol', async t => {
-    await binance.futuresPrices();
+    await binance.futuresPrices()
     t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/ticker/price')
 })
 
-
 test.serial('[REST] Orderbook', async t => {
     try {
-        await binance.book({ symbol: 'BTCUSDT' });
+        await binance.book({ symbol: 'BTCUSDT' })
     } catch (e) {
         // it can throw an error because of the mocked response
     }
@@ -79,7 +77,7 @@ test.serial('[REST] Orderbook', async t => {
 
 test.serial('[REST] Futures Orderbook', async t => {
     try {
-        await binance.futuresBook({ symbol: 'BTCUSDT' });
+        await binance.futuresBook({ symbol: 'BTCUSDT' })
     } catch (e) {
         // it can throw an error because of the mocked response
     }
@@ -92,7 +90,11 @@ test.serial('[REST] OHLCVS', async t => {
     } catch (e) {
         // it can throw an error because of the mocked response
     }
-    t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/klines?interval=5m&symbol=BTCUSDT'))
+    t.true(
+        interceptedUrl.startsWith(
+            'https://api.binance.com/api/v3/klines?interval=5m&symbol=BTCUSDT',
+        ),
+    )
 })
 
 test.serial('[REST] Futures OHLCVS', async t => {
@@ -141,7 +143,6 @@ test.serial('[REST] PositionRisk V2', async t => {
     t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v2/positionRisk'))
 })
 
-
 test.serial('[REST] CancelOrder', async t => {
     await binance.cancelOrder({ symbol: 'LTCUSDT', orderId: '34234234' })
     t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order'))
@@ -158,8 +159,8 @@ test.serial('[REST] Futures CancelOrder', async t => {
     t.is(obj.orderId, '34234234')
 })
 
-const CONTRACT_PREFIX = "x-ftGmvgAN"
-const SPOT_PREFIX = "x-B3AUXNYV"
+const CONTRACT_PREFIX = 'x-ftGmvgAN'
+const SPOT_PREFIX = 'x-B3AUXNYV'
 
 test.serial('[REST] MarketBuy', async t => {
     await binance.order({ symbol: 'LTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.5 })
@@ -183,11 +184,16 @@ test.serial('[REST] MarketSell', async t => {
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
     t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
-
 })
 
 test.serial('[REST] LimitBuy', async t => {
-    await binance.order({ symbol: 'LTCUSDT', side: 'BUY', type: 'LIMIT', quantity: 0.5, price: 100 })
+    await binance.order({
+        symbol: 'LTCUSDT',
+        side: 'BUY',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+    })
     t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order'))
     const body = interceptedUrl.replace('https://api.binance.com/api/v3/order', '')
     const obj = urlToObject(body)
@@ -199,7 +205,13 @@ test.serial('[REST] LimitBuy', async t => {
 })
 
 test.serial('[REST] LimitSell', async t => {
-    await binance.order({ symbol: 'LTCUSDT', side: 'SELL', type: 'LIMIT', quantity: 0.5, price: 100 })
+    await binance.order({
+        symbol: 'LTCUSDT',
+        side: 'SELL',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+    })
     t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order'))
     const body = interceptedUrl.replace('https://api.binance.com/api/v3/order', '')
     const obj = urlToObject(body)
@@ -209,7 +221,6 @@ test.serial('[REST] LimitSell', async t => {
     t.is(obj.quantity, '0.5')
     t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
-
 
 test.serial('[REST] Futures MarketBuy', async t => {
     await binance.futuresOrder({ symbol: 'LTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.5 })
@@ -234,7 +245,13 @@ test.serial('[REST] Futures MarketSell', async t => {
 })
 
 test.serial('[REST] Futures LimitBuy', async t => {
-    await binance.futuresOrder({ symbol: 'LTCUSDT', side: 'BUY', type: 'LIMIT', quantity: 0.5, price: 100 })
+    await binance.futuresOrder({
+        symbol: 'LTCUSDT',
+        side: 'BUY',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+    })
     t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/order'))
     const obj = urlToObject(interceptedUrl.replace('https://fapi.binance.com/fapi/v1/order?', ''))
     t.is(obj.symbol, 'LTCUSDT')
@@ -244,7 +261,13 @@ test.serial('[REST] Futures LimitBuy', async t => {
 })
 
 test.serial('[REST] Futures LimitSell', async t => {
-    await binance.futuresOrder({ symbol: 'LTCUSDT', side: 'SELL', type: 'LIMIT', quantity: 0.5, price: 100 })
+    await binance.futuresOrder({
+        symbol: 'LTCUSDT',
+        side: 'SELL',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+    })
     t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/order'))
     const obj = urlToObject(interceptedUrl.replace('https://fapi.binance.com/fapi/v1/order?', ''))
     t.is(obj.symbol, 'LTCUSDT')
@@ -253,7 +276,6 @@ test.serial('[REST] Futures LimitSell', async t => {
     t.is(obj.quantity, '0.5')
     t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
-
 
 test.serial('[REST] Futures cancel order', async t => {
     await binance.futuresCancelOrder({ symbol: 'LTCUSDT', orderId: '34234234' })
@@ -305,7 +327,7 @@ test.serial('[REST] spot order with custom clientorderId', async t => {
         type: 'LIMIT',
         quantity: 0.5,
         price: 100,
-        newClientOrderId: 'myid'
+        newClientOrderId: 'myid',
     })
     t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order'))
     const body = interceptedUrl.replace('https://api.binance.com/api/v3/order', '')
@@ -317,7 +339,6 @@ test.serial('[REST] spot order with custom clientorderId', async t => {
     t.is(obj.price, '100')
     t.is(obj.newClientOrderId, 'myid')
 })
-
 
 test.serial('[REST] delivery OrderBook', async t => {
     try {
@@ -334,12 +355,20 @@ test.serial('[REST] futures set leverage', async t => {
     } catch (e) {
         // it can throw an error because of the mocked response
     }
-    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/leverage?symbol=BTCUSDT&leverage=5'))
+    t.true(
+        interceptedUrl.startsWith(
+            'https://fapi.binance.com/fapi/v1/leverage?symbol=BTCUSDT&leverage=5',
+        ),
+    )
 })
 
-
 test.serial('[REST] delivery MarketBuy', async t => {
-    await binance.deliveryOrder({ symbol: 'BTCUSD_PERP', side: 'BUY', type: 'MARKET', quantity: 0.1 })
+    await binance.deliveryOrder({
+        symbol: 'BTCUSD_PERP',
+        side: 'BUY',
+        type: 'MARKET',
+        quantity: 0.1,
+    })
     t.true(interceptedUrl.startsWith('https://dapi.binance.com/dapi/v1/order'))
     const obj = urlToObject(interceptedUrl.replace('https://dapi.binance.com/dapi/v1/order', ''))
     t.is(obj.symbol, 'BTCUSD_PERP')
