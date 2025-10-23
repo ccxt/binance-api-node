@@ -3,8 +3,8 @@ const { default: Binance } = require('../dist')
 async function main() {
     // Test proxy configuration
     const binanceConfig = {
-        apiKey: process.env.API_KEY || 'test_api_key',
-        apiSecret: process.env.API_SECRET || 'test_api_secret',
+        apiKey: process.env.API_KEY || 'sNmjsAVjEik4NCqYIcVFQjtajI7hxri2MCHqtfaeuTdlnmnj26FIjcz08Nhw3epc',
+        apiSecret: process.env.API_SECRET || 'HRjPXjP8Ws7IBOJPqYN3GDt8tytfEiNDOOsjTvSA9vAAaQzxfrOXjo27eqFND6qz',
         proxy: process.env.PROXY_URL || 'http://188.245.226.105:8911',
         testnet: true,
     }

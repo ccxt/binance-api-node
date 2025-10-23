@@ -1,24 +1,19 @@
 import test from 'ava'
-import dotenv from 'dotenv'
 
 import Binance from 'index'
 
 import { checkFields } from './utils'
-
-dotenv.config()
+import { binanceConfig, hasTestCredentials } from './config'
 
 const main = () => {
-    if (!process.env.API_KEY || !process.env.API_SECRET) {
+    if (!hasTestCredentials()) {
         return test('[AUTH] ⚠️  Skipping tests.', t => {
             t.log('Provide an API_KEY and API_SECRET to run them.')
             t.pass()
         })
     }
 
-    const client = Binance({
-        apiKey: process.env.API_KEY,
-        apiSecret: process.env.API_SECRET,
-    })
+    const client = Binance(binanceConfig)
 
     test('[REST] order', async t => {
         try {

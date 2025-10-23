@@ -1,5 +1,6 @@
 import zip from 'lodash.zipobject'
 import JSONbig from 'json-bigint'
+import { createHmacSignature } from './signature'
 
 // Robust environment detection for Node.js vs Browser
 const isNode = (() => {
@@ -20,13 +21,11 @@ const isNode = (() => {
 })()
 
 // Platform-specific imports
-let nodeCrypto
 let fetch
 let HttpsProxyAgent
 
 if (isNode) {
     // Node.js environment - use node-fetch for proper proxy support
-    nodeCrypto = require('crypto')
     const nodeFetch = require('node-fetch')
     fetch = nodeFetch.default || nodeFetch
     const proxyAgent = require('https-proxy-agent')
@@ -34,39 +33,6 @@ if (isNode) {
 } else {
     // Browser environment - use native APIs
     fetch = globalThis.fetch?.bind(globalThis) || window.fetch?.bind(window)
-}
-
-/**
- * Create HMAC-SHA256 signature - works in both Node.js and browsers
- * @param {string} data - Data to sign
- * @param {string} secret - Secret key
- * @returns {Promise<string>} Hex-encoded signature
- */
-const createHmacSignature = async (data, secret) => {
-    if (isNode) {
-        // Node.js - synchronous crypto
-        return nodeCrypto.createHmac('sha256', secret).update(data).digest('hex')
-    } else {
-        // Browser - Web Crypto API (async)
-        const encoder = new TextEncoder()
-        const keyData = encoder.encode(secret)
-        const messageData = encoder.encode(data)
-
-        const key = await crypto.subtle.importKey(
-            'raw',
-            keyData,
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['sign'],
-        )
-
-        const signature = await crypto.subtle.sign('HMAC', key, messageData)
-
-        // Convert ArrayBuffer to hex string
-        return Array.from(new Uint8Array(signature))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('')
-    }
 }
 
 const getEndpoint = (endpoints, path, testnet) => {
