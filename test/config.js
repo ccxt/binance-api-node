@@ -19,6 +19,7 @@ dotenv.config()
 
 /**
  * Default proxy URL for tests
+ * Uses proxy for all requests to avoid rate limiting
  */
 export const proxyUrl = process.env.PROXY_URL || 'http://188.245.226.105:8911'
 
@@ -35,11 +36,13 @@ export const binancePublicConfig = {
  * Uses testnet for safe testing without affecting real accounts
  */
 export const binanceConfig = {
-    apiKey: process.env.API_KEY || 'tiNOK2SOi6RRGnvGrP606ZlrpvwHu5vVxbGB8G9RAWQlpDPwAhgZoYus7Dsscj7P',
+    apiKey: process.env.API_KEY || 'qvLBjXzTm4gKNz3cjoURRC9pTRo9ji6QdUzSkF8m1t3oWrvYHv8MuFHvRUxpxTyq',
     apiSecret:
-        process.env.API_SECRET || 'rtIwFZWUY6cYwraGGdgoaKAhL87E5ycrgqewAe47YflfXHsiivfocbasCBD8j7Yc',
+        process.env.API_SECRET || 'wv3WUjY2beu9gImZy9TlK9UDcd4xMIeCaRFGftPJv7CEvdaZfUcORlwYLtsboIWr',
     proxy: proxyUrl,
     testnet: true,
+    recvWindow: 60000, // Maximum allowed by Binance API
+    useServerTime: true, // Use server time to avoid timestamp issues
 }
 
 /**

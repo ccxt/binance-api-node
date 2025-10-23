@@ -135,6 +135,7 @@ const main = () => {
     test('[REST] openOrders', async t => {
         const orders = await client.openOrders({
             symbol: 'ETHBTC',
+            recvWindow: 60000,
         })
 
         t.true(Array.isArray(orders))
@@ -223,7 +224,7 @@ const main = () => {
     })
 
     test('[REST] myTrades', async t => {
-        const trades = await client.myTrades({ symbol: 'ETHBTC' })
+        const trades = await client.myTrades({ symbol: 'ETHBTC', recvWindow: 60000 })
         t.true(Array.isArray(trades))
         if (trades.length > 0) {
             const [trade] = trades
