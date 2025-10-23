@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Binance WebSocket Browser Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 { color: #4ec9b0; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+        }
+        button:hover { background: #1177bb; }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        #results {
+            background: #252526;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            min-height: 300px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .info { color: #569cd6; }
+        .data { color: #ce9178; }
+    </style>
+</head>
+<body>
+    <h1>🔌 Binance WebSocket Browser Test</h1>
+    <p>Tests WebSocket connectivity to Binance public ticker stream</p>
+    
+    <div>
+        <button id="testBtn" onclick="runTest()">▶️ Run Test</button>
+        <button id="stopBtn" onclick="stopTest()" disabled>⏹️ Stop Test</button>
+        <button onclick="clearResults()">🗑️ Clear</button>
+    </div>
+
+    <div id="results">Ready to test WebSocket connection...</div>
+
+    <script>
+        let ws = null;
+        let messageCount = 0;
+        let testPassed = false;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : 
+                            type === 'error' ? 'error' : 
+                            type === 'data' ? 'data' : 'info';
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = 'Ready to test WebSocket connection...\n';
+            messageCount = 0;
+            testPassed = false;
+        }
+
+        function updateButtons(testing) {
+            document.getElementById('testBtn').disabled = testing;
+            document.getElementById('stopBtn').disabled = !testing;
+        }
+
+        async function runTest() {
+            clearResults();
+            updateButtons(true);
+            messageCount = 0;
+            testPassed = false;
+
+            log('🚀 Starting WebSocket Test...', 'info');
+            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+
+            try {
+                // Test 1: Check WebSocket API availability
+                log('✓ Test 1: Checking WebSocket API availability...', 'info');
+                if (typeof WebSocket === 'undefined') {
+                    throw new Error('WebSocket API not available in this browser');
+                }
+                log('  ✅ WebSocket API is available', 'success');
+
+                // Test 2: Create WebSocket connection
+                log('✓ Test 2: Connecting to Binance WebSocket...', 'info');
+                const symbol = 'btcusdt'; // BTC/USDT (more liquid than BTC/BNB)
+                const wsUrl = `wss://stream.binance.com:9443/ws/${symbol}@ticker`;
+                log(`  → Connecting to: ${wsUrl}`, 'info');
+
+                ws = new WebSocket(wsUrl);
+
+                // Test 3: Handle connection open
+                ws.onopen = () => {
+                    log('  ✅ WebSocket connection established', 'success');
+                    log('  → Waiting for ticker data...', 'info');
+                };
+
+                // Test 4: Receive and validate data
+                ws.onmessage = (event) => {
+                    messageCount++;
+                    
+                    if (messageCount === 1) {
+                        log('✓ Test 3: Receiving ticker data...', 'info');
+                    }
+
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        if (messageCount === 1) {
+                            log(`  ✅ Received first message (#${messageCount})`, 'success');
+                            log('  → Validating data structure...', 'info');
+                            
+                            // Validate ticker data structure
+                            const requiredFields = ['s', 'c', 'h', 'l', 'v'];
+                            const missingFields = requiredFields.filter(field => !(field in data));
+                            
+                            if (missingFields.length > 0) {
+                                throw new Error(`Missing fields: ${missingFields.join(', ')}`);
+                            }
+                            
+                            log('  ✅ Data structure valid', 'success');
+                            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+                            log('📊 Ticker Data:', 'data');
+                            log(`  Symbol:       ${data.s}`, 'data');
+                            log(`  Last Price:   ${data.c}`, 'data');
+                            log(`  High (24h):   ${data.h}`, 'data');
+                            log(`  Low (24h):    ${data.l}`, 'data');
+                            log(`  Volume (24h): ${data.v}`, 'data');
+                            log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+                            
+                            testPassed = true;
+                            
+                            // Auto-close after receiving first valid message
+                            setTimeout(() => {
+                                stopTest();
+                            }, 2000);
+                        } else if (messageCount <= 5) {
+                            // Log a few more updates
+                            log(`  → Update #${messageCount}: Price ${data.c}`, 'info');
+                        }
+                    } catch (error) {
+                        log(`  ❌ Error parsing message: ${error.message}`, 'error');
+                    }
+                };
+
+                // Test 5: Handle errors
+                ws.onerror = (error) => {
+                    log('❌ WebSocket error occurred', 'error');
+                    log(`  Error: ${error.message || 'Unknown error'}`, 'error');
+                    updateButtons(false);
+                };
+
+                // Test 6: Handle connection close
+                ws.onclose = (event) => {
+                    log('✓ Test 4: Connection closed', 'info');
+                    log(`  Code: ${event.code}, Reason: ${event.reason || 'Normal closure'}`, 'info');
+                    log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
+                    
+                    if (testPassed && messageCount > 0) {
+                        log('🎉 ALL TESTS PASSED!', 'success');
+                        log(`  ✅ WebSocket API available`, 'success');
+                        log(`  ✅ Connection established`, 'success');
+                        log(`  ✅ Received ${messageCount} messages`, 'success');
+                        log(`  ✅ Data structure validated`, 'success');
+                        log(`  ✅ Connection closed gracefully`, 'success');
+                    } else if (messageCount === 0) {
+                        log('⚠️  Test incomplete: No messages received', 'error');
+                    } else {
+                        log('⚠️  Test completed with issues', 'error');
+                    }
+                    
+                    updateButtons(false);
+                };
+
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'error');
+                updateButtons(false);
+            }
+        }
+
+        function stopTest() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log('⏹️  Closing WebSocket connection...', 'info');
+                ws.close(1000, 'Test completed');
+            } else {
+                log('ℹ️  No active connection to close', 'info');
+                updateButtons(false);
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (ws) {
+                ws.close();
+            }
+        });
+    </script>
+</body>
+</html>
