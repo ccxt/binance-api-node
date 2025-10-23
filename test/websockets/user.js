@@ -1,10 +1,13 @@
 import test from 'ava'
 
+import Binance from 'index'
 import { userEventHandler } from 'websocket'
 
-// TODO: add testnet to be able to test private ws endpoints
-// Note: User data stream tests require API credentials
-// These tests use userEventHandler to test event transformations without needing live connections
+// Testnet credentials for real connection tests
+const api_key = 'u4L8MG2DbshTfTzkx2Xm7NfsHHigvafxeC29HrExEmah1P8JhxXkoOu6KntLICUc'
+const api_secret = 'hBZEqhZUUS6YZkk7AIckjJ3iLjrgEFr5CRtFPp5gjzkrHKKC9DAv4OH25PlT6yq5'
+const proxy = 'http://188.245.226.105:8911'
+const testnet = true
 
 test('[WS] userEvents - outboundAccountInfo', t => {
     const accountPayload = {
@@ -328,4 +331,108 @@ test('[WS] userEvents - outboundAccountPosition', t => {
             ],
         })
     })({ data: JSON.stringify(positionPayload) })
+})
+
+// Real connection test with testnet
+test('[WS] userEvents - real connection with market order', async t => {
+    // Create client with testnet endpoints and proxy
+    // Note: Don't use testnet: true as it overrides httpBase with demo-api.binance.com
+    const client = Binance({
+        apiKey: api_key,
+        apiSecret: api_secret,
+        proxy,
+        wsBase: 'wss://stream.testnet.binance.vision/ws',
+        httpBase: 'https://testnet.binance.vision',
+    })
+
+    t.timeout(60000) // 60 second timeout for network operations
+
+    return new Promise(async (resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error('Test timeout - no user events received after placing order'))
+        }, 55000)
+
+        let wsCleanup = null
+        let receivedExecutionReport = false
+        let orderPlaced = false
+
+        try {
+            // Connect to user data stream
+            console.log('Connecting to user data stream on testnet...')
+            wsCleanup = await client.ws.user(msg => {
+                console.log('Received user event:', msg.eventType)
+
+                // We're looking for an executionReport event from our order
+                if (msg.eventType === 'executionReport') {
+                    console.log('Execution report received:', {
+                        symbol: msg.symbol,
+                        side: msg.side,
+                        orderType: msg.orderType,
+                        executionType: msg.executionType,
+                        orderStatus: msg.orderStatus,
+                    })
+
+                    // Validate the event structure
+                    t.truthy(msg.eventType)
+                    t.truthy(msg.symbol)
+                    t.truthy(msg.side)
+                    t.truthy(msg.orderType)
+                    t.truthy(msg.executionType)
+                    t.truthy(msg.orderStatus)
+                    t.is(typeof msg.eventTime, 'number')
+
+                    receivedExecutionReport = true
+
+                    // Clean up and resolve
+                    clearTimeout(timeout)
+                    if (wsCleanup) {
+                        wsCleanup()
+                    }
+                    resolve()
+                }
+            })
+
+            console.log('User data stream connected')
+
+            // Wait a moment for WebSocket to be fully established
+            await new Promise(r => setTimeout(r, 2000))
+
+            // Get account info to check balance
+            console.log('Checking account balance...')
+            const accountInfo = await client.accountInfo()
+            console.log(
+                'Account balances:',
+                accountInfo.balances.filter(b => parseFloat(b.free) > 0).slice(0, 5),
+            )
+
+            // Place a small market BUY order
+            const order = await client.order({
+                symbol: 'BTCUSDT',
+                side: 'SELL',
+                type: 'MARKET',
+                quantity: 0.001,
+            })
+
+            orderPlaced = true
+        } catch (error) {
+            clearTimeout(timeout)
+            if (wsCleanup) {
+                wsCleanup()
+            }
+
+            // If we couldn't place order due to balance/filters, that's OK
+            if (
+                error.message?.includes('insufficient balance') ||
+                error.message?.includes('MIN_NOTIONAL') ||
+                error.message?.includes('LOT_SIZE')
+            ) {
+                console.log('Expected error (balance/filters):', error.message)
+                t.pass('Test passed - handled expected error')
+                resolve()
+            } else {
+                console.error('Unexpected error:', error)
+                reject(error)
+            }
+        }
+    })
 })

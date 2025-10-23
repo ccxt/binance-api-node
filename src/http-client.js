@@ -1,9 +1,73 @@
-import crypto from 'crypto'
 import zip from 'lodash.zipobject'
-import HttpsProxyAgent from 'https-proxy-agent'
 import JSONbig from 'json-bigint'
 
-import 'isomorphic-fetch'
+// Robust environment detection for Node.js vs Browser
+const isNode = (() => {
+    // Check for Node.js specific features
+    if (
+        typeof process !== 'undefined' &&
+        process.versions != null &&
+        process.versions.node != null
+    ) {
+        return true
+    }
+    // Check for Deno
+    if (typeof Deno !== 'undefined' && Deno.version != null) {
+        return true
+    }
+    // Browser or Web Worker
+    return false
+})()
+
+// Platform-specific imports
+let nodeCrypto
+let fetch
+let HttpsProxyAgent
+
+if (isNode) {
+    // Node.js environment - use node-fetch for proper proxy support
+    nodeCrypto = require('crypto')
+    const nodeFetch = require('node-fetch')
+    fetch = nodeFetch.default || nodeFetch
+    const proxyAgent = require('https-proxy-agent')
+    HttpsProxyAgent = proxyAgent.HttpsProxyAgent || proxyAgent.default || proxyAgent
+} else {
+    // Browser environment - use native APIs
+    fetch = globalThis.fetch?.bind(globalThis) || window.fetch?.bind(window)
+}
+
+/**
+ * Create HMAC-SHA256 signature - works in both Node.js and browsers
+ * @param {string} data - Data to sign
+ * @param {string} secret - Secret key
+ * @returns {Promise<string>} Hex-encoded signature
+ */
+const createHmacSignature = async (data, secret) => {
+    if (isNode) {
+        // Node.js - synchronous crypto
+        return nodeCrypto.createHmac('sha256', secret).update(data).digest('hex')
+    } else {
+        // Browser - Web Crypto API (async)
+        const encoder = new TextEncoder()
+        const keyData = encoder.encode(secret)
+        const messageData = encoder.encode(data)
+
+        const key = await crypto.subtle.importKey(
+            'raw',
+            keyData,
+            { name: 'HMAC', hash: 'SHA-256' },
+            false,
+            ['sign'],
+        )
+
+        const signature = await crypto.subtle.sign('HMAC', key, messageData)
+
+        // Convert ArrayBuffer to hex string
+        return Array.from(new Uint8Array(signature))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('')
+    }
+}
 
 const getEndpoint = (endpoints, path, testnet) => {
     const isFutures = path.includes('/fapi') || path.includes('/futures')
@@ -147,13 +211,22 @@ const futuresP = () => {
 const publicCall =
     ({ proxy, endpoints, testnet }) =>
     (path, data, method = 'GET', headers = {}) => {
+        const fetchOptions = {
+            method,
+            json: true,
+            headers,
+        }
+
+        // Only add proxy agent in Node.js environment
+        if (proxy && isNode && HttpsProxyAgent) {
+            fetchOptions.agent = new HttpsProxyAgent(proxy)
+        }
+
         return sendResult(
-            fetch(`${getEndpoint(endpoints, path, testnet)}${path}${makeQueryString(data)}`, {
-                method,
-                json: true,
-                headers,
-                ...(proxy ? { agent: new HttpsProxyAgent(proxy) } : {}),
-            }),
+            fetch(
+                `${getEndpoint(endpoints, path, testnet)}${path}${makeQueryString(data)}`,
+                fetchOptions,
+            ),
         )
     }
 
@@ -197,30 +270,42 @@ const privateCall =
             data && data.useServerTime
                 ? pubCall('/api/v3/time').then(r => r.serverTime)
                 : Promise.resolve(getTime())
-        ).then(timestamp => {
-            if (data) {
-                delete data.useServerTime
-            }
+        )
+            .then(timestamp => {
+                if (data) {
+                    delete data.useServerTime
+                }
 
-            const signature = crypto
-                .createHmac('sha256', apiSecret)
-                .update(makeQueryString({ ...data, timestamp }).substr(1))
-                .digest('hex')
+                const queryString = makeQueryString({ ...data, timestamp })
+                const dataToSign = queryString.substr(1)
 
-            const newData = noExtra ? data : { ...data, timestamp, signature }
+                // Create signature (async in browser, sync in Node.js)
+                return createHmacSignature(dataToSign, apiSecret).then(signature => ({
+                    timestamp,
+                    signature,
+                }))
+            })
+            .then(({ timestamp, signature }) => {
+                const newData = noExtra ? data : { ...data, timestamp, signature }
 
-            return sendResult(
-                fetch(
-                    `${getEndpoint(endpoints, path, testnet)}${path}${noData ? '' : makeQueryString(newData)}`,
-                    {
-                        method,
-                        headers: { 'X-MBX-APIKEY': apiKey },
-                        json: true,
-                        ...(proxy ? { agent: new HttpsProxyAgent(proxy) } : {}),
-                    },
-                ),
-            )
-        })
+                const fetchOptions = {
+                    method,
+                    headers: { 'X-MBX-APIKEY': apiKey },
+                    json: true,
+                }
+
+                // Only add proxy agent in Node.js environment
+                if (proxy && isNode && HttpsProxyAgent) {
+                    fetchOptions.agent = new HttpsProxyAgent(proxy)
+                }
+
+                return sendResult(
+                    fetch(
+                        `${getEndpoint(endpoints, path, testnet)}${path}${noData ? '' : makeQueryString(newData)}`,
+                        fetchOptions,
+                    ),
+                )
+            })
     }
 
 export const candleFields = [
