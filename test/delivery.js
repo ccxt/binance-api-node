@@ -87,7 +87,12 @@ const main = () => {
             t.true(Array.isArray(balance), 'Should return an array')
             if (balance.length > 0) {
                 const [asset] = balance
-                checkFields(t, asset, ['asset', 'balance', 'crossWalletBalance', 'availableBalance'])
+                checkFields(t, asset, [
+                    'asset',
+                    'balance',
+                    'crossWalletBalance',
+                    'availableBalance',
+                ])
             }
         } catch (e) {
             if (e.message && (e.message.includes('404') || e.message.includes('Not Found'))) {
@@ -497,7 +502,7 @@ const main = () => {
         try {
             const currentPrice = await getCurrentPrice()
             // Place orders 10% below market (very low price, unlikely to fill)
-            const buyPrice = Math.floor(currentPrice * 0.90)
+            const buyPrice = Math.floor(currentPrice * 0.9)
 
             // Note: Delivery uses contract quantity, not BTC quantity
             // Each contract represents a specific amount of the underlying asset
@@ -552,7 +557,9 @@ const main = () => {
                 // All orders failed, check if it's due to validation or testnet limitation
                 const failedOrders = result.filter(order => order.code)
                 if (failedOrders.length > 0) {
-                    t.pass('Batch orders API works but orders failed validation (testnet limitation)')
+                    t.pass(
+                        'Batch orders API works but orders failed validation (testnet limitation)',
+                    )
                 }
             }
         } catch (e) {

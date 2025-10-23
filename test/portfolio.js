@@ -46,14 +46,15 @@ const main = () => {
     const client = Binance(binanceConfig)
 
     // Helper to check if Portfolio Margin is available
-    const portfolioNotAvailable = (e) => {
-        return e.message && (
-            e.message.includes('404') ||
-            e.message.includes('Not Found') ||
-            e.message.includes('not enabled') ||
-            e.message.includes('not support') ||
-            e.name === 'SyntaxError' ||
-            e.message.includes('Unexpected')
+    const portfolioNotAvailable = e => {
+        return (
+            e.message &&
+            (e.message.includes('404') ||
+                e.message.includes('Not Found') ||
+                e.message.includes('not enabled') ||
+                e.message.includes('not support') ||
+                e.name === 'SyntaxError' ||
+                e.message.includes('Unexpected'))
         )
     }
 
@@ -146,7 +147,7 @@ const main = () => {
     test('[PORTFOLIO] portfolioMarginInterestHistory - with time range', async t => {
         try {
             const now = Date.now()
-            const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000)
+            const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000
 
             const interestHistory = await client.portfolioMarginInterestHistory({
                 startTime: sevenDaysAgo,
@@ -189,7 +190,7 @@ const main = () => {
     test('[PORTFOLIO] portfolioMarginInterestHistory - invalid time range', async t => {
         try {
             const now = Date.now()
-            const futureTime = now + (7 * 24 * 60 * 60 * 1000)
+            const futureTime = now + 7 * 24 * 60 * 60 * 1000
 
             await client.portfolioMarginInterestHistory({
                 startTime: futureTime,
@@ -239,7 +240,10 @@ const main = () => {
                 // Response might be an array
                 Array.isArray(accountInfo)
 
-            t.truthy(hasAccountData || typeof accountInfo === 'object', 'Should return account data')
+            t.truthy(
+                hasAccountData || typeof accountInfo === 'object',
+                'Should return account data',
+            )
         } catch (e) {
             if (portfolioNotAvailable(e)) {
                 t.pass('Portfolio Margin not available on testnet or not enabled for account')

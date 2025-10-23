@@ -27,7 +27,7 @@ const main = () => {
             // Error message changed in newer API versions
             t.true(
                 e.message.includes('PERCENT_PRICE') || e.message.includes('PERCENT_PRICE_BY_SIDE'),
-                'Should fail with price filter error'
+                'Should fail with price filter error',
             )
         }
 
@@ -279,7 +279,10 @@ const main = () => {
         if (walletBalance.length > 0) {
             // Check for at least some common fields (testnet may not have all fields)
             const balance = walletBalance[0]
-            t.truthy(balance.accountAlias !== undefined || balance.asset !== undefined, 'Should have some balance data')
+            t.truthy(
+                balance.accountAlias !== undefined || balance.asset !== undefined,
+                'Should have some balance data',
+            )
         } else {
             t.pass('No balance found (acceptable on testnet)')
         }

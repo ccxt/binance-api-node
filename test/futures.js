@@ -369,7 +369,7 @@ const main = () => {
     test('[FUTURES] Integration - create, query, cancel order', async t => {
         const currentPrice = await getCurrentPrice()
         // Place order 10% below market (very low price, unlikely to fill)
-        const buyPrice = Math.floor(currentPrice * 0.90)
+        const buyPrice = Math.floor(currentPrice * 0.9)
         // Futures minimum notional is $100, so we need larger quantity
         const quantity = Math.max(0.002, Math.ceil((100 / buyPrice) * 1000) / 1000)
 
@@ -429,7 +429,7 @@ const main = () => {
     test('[FUTURES] futuresBatchOrders - create multiple orders', async t => {
         const currentPrice = await getCurrentPrice()
         const buyPrice1 = Math.floor(currentPrice * 0.85)
-        const buyPrice2 = Math.floor(currentPrice * 0.80)
+        const buyPrice2 = Math.floor(currentPrice * 0.8)
         // Ensure minimum notional of $100
         const quantity1 = Math.max(0.002, Math.ceil((100 / buyPrice1) * 1000) / 1000)
         const quantity2 = Math.max(0.002, Math.ceil((100 / buyPrice2) * 1000) / 1000)

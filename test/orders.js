@@ -190,8 +190,10 @@ const main = () => {
             t.fail('Should have thrown error for missing orderId or origClientOrderId')
         } catch (e) {
             // Accept either validation error or timestamp error (timing issue with proxy)
-            const isValidationError = e.message.includes('orderId') || e.message.includes('origClientOrderId')
-            const isTimestampError = e.message.includes('Timestamp') || e.message.includes('recvWindow')
+            const isValidationError =
+                e.message.includes('orderId') || e.message.includes('origClientOrderId')
+            const isTimestampError =
+                e.message.includes('Timestamp') || e.message.includes('recvWindow')
             t.truthy(
                 isValidationError || isTimestampError,
                 'Error should mention missing orderId/origClientOrderId or timestamp issue',
@@ -324,7 +326,7 @@ const main = () => {
     test('[ORDERS] Integration - create, query, cancel order', async t => {
         const currentPrice = await getCurrentPrice()
         // Place order 10% below market (very low price, unlikely to fill)
-        const buyPrice = Math.floor(currentPrice * 0.90)
+        const buyPrice = Math.floor(currentPrice * 0.9)
 
         // Create an order on testnet
         const createResult = await client.order({
@@ -383,9 +385,9 @@ const main = () => {
     test('[ORDERS] Integration - create, query, cancel OCO order', async t => {
         const currentPrice = await getCurrentPrice()
         // High take-profit price (10% above market)
-        const takeProfitPrice = Math.floor(currentPrice * 1.10)
+        const takeProfitPrice = Math.floor(currentPrice * 1.1)
         // Low stop-loss price (10% below market)
-        const stopPrice = Math.floor(currentPrice * 0.90)
+        const stopPrice = Math.floor(currentPrice * 0.9)
         const stopLimitPrice = Math.floor(stopPrice * 0.99)
 
         // Create an OCO order on testnet

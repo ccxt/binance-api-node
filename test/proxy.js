@@ -55,7 +55,10 @@ test('[PROXY] time - get server time through proxy', async t => {
         // Check time difference is reasonable (within 5 minutes)
         const localTime = Date.now()
         const timeDiff = Math.abs(localTime - serverTime)
-        t.true(timeDiff < 5 * 60 * 1000, `Time difference should be less than 5 minutes, got ${timeDiff}ms`)
+        t.true(
+            timeDiff < 5 * 60 * 1000,
+            `Time difference should be less than 5 minutes, got ${timeDiff}ms`,
+        )
 
         t.pass('Server time retrieved successfully through proxy')
     } catch (e) {
@@ -123,14 +126,15 @@ const main = () => {
     const client = Binance(binanceConfig)
 
     // Helper to check if endpoint/proxy is available
-    const notAvailable = (e) => {
-        return e.message && (
-            e.message.includes('404') ||
-            e.message.includes('Not Found') ||
-            e.message.includes('ECONNREFUSED') ||
-            e.message.includes('proxy') ||
-            e.message.includes('not enabled') ||
-            e.message.includes('not support')
+    const notAvailable = e => {
+        return (
+            e.message &&
+            (e.message.includes('404') ||
+                e.message.includes('Not Found') ||
+                e.message.includes('ECONNREFUSED') ||
+                e.message.includes('proxy') ||
+                e.message.includes('not enabled') ||
+                e.message.includes('not support'))
         )
     }
 
@@ -143,7 +147,9 @@ const main = () => {
             t.truthy(accountInfo.makerCommission !== undefined, 'Should have makerCommission')
             t.truthy(accountInfo.takerCommission !== undefined, 'Should have takerCommission')
 
-            t.pass(`Account info retrieved successfully through proxy (${accountInfo.balances.length} balances)`)
+            t.pass(
+                `Account info retrieved successfully through proxy (${accountInfo.balances.length} balances)`,
+            )
         } catch (e) {
             if (notAvailable(e)) {
                 t.pass('Account info endpoint or proxy not available on testnet')
@@ -159,7 +165,10 @@ const main = () => {
                 recvWindow: 60000,
             })
 
-            t.true(Array.isArray(deposits) || typeof deposits === 'object', 'Should return deposits data')
+            t.true(
+                Array.isArray(deposits) || typeof deposits === 'object',
+                'Should return deposits data',
+            )
             t.pass('Deposit history retrieved successfully through proxy')
         } catch (e) {
             if (notAvailable(e)) {

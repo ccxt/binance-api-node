@@ -36,9 +36,11 @@ export const binancePublicConfig = {
  * Uses testnet for safe testing without affecting real accounts
  */
 export const binanceConfig = {
-    apiKey: process.env.API_KEY || 'qvLBjXzTm4gKNz3cjoURRC9pTRo9ji6QdUzSkF8m1t3oWrvYHv8MuFHvRUxpxTyq',
+    apiKey:
+        process.env.API_KEY || 'qvLBjXzTm4gKNz3cjoURRC9pTRo9ji6QdUzSkF8m1t3oWrvYHv8MuFHvRUxpxTyq',
     apiSecret:
-        process.env.API_SECRET || 'wv3WUjY2beu9gImZy9TlK9UDcd4xMIeCaRFGftPJv7CEvdaZfUcORlwYLtsboIWr',
+        process.env.API_SECRET ||
+        'wv3WUjY2beu9gImZy9TlK9UDcd4xMIeCaRFGftPJv7CEvdaZfUcORlwYLtsboIWr',
     proxy: proxyUrl,
     testnet: true,
     recvWindow: 60000, // Maximum allowed by Binance API

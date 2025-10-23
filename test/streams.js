@@ -54,14 +54,15 @@ const main = () => {
     const client = Binance(binanceConfig)
 
     // Helper to check if endpoint is available
-    const notAvailable = (e) => {
-        return e.message && (
-            e.message.includes('404') ||
-            e.message.includes('Not Found') ||
-            e.message.includes('not enabled') ||
-            e.message.includes('not support') ||
-            e.name === 'SyntaxError' ||
-            e.message.includes('Unexpected')
+    const notAvailable = e => {
+        return (
+            e.message &&
+            (e.message.includes('404') ||
+                e.message.includes('Not Found') ||
+                e.message.includes('not enabled') ||
+                e.message.includes('not support') ||
+                e.name === 'SyntaxError' ||
+                e.message.includes('Unexpected'))
         )
     }
 

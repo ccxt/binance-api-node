@@ -112,12 +112,13 @@ const main = () => {
     }
 
     // Helper to check if PAPI is available (handles 404 errors and empty responses)
-    const papiNotAvailable = (e) => {
-        return e.message && (
-            e.message.includes('404') ||
-            e.message.includes('Not Found') ||
-            e.name === 'SyntaxError' ||
-            e.message.includes('Unexpected')
+    const papiNotAvailable = e => {
+        return (
+            e.message &&
+            (e.message.includes('404') ||
+                e.message.includes('Not Found') ||
+                e.name === 'SyntaxError' ||
+                e.message.includes('Unexpected'))
         )
     }
 

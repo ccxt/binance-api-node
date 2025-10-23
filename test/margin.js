@@ -357,7 +357,7 @@ const main = () => {
         try {
             const currentPrice = await getCurrentPrice()
             // Place order 10% below market (very low price, unlikely to fill)
-            const buyPrice = Math.floor(currentPrice * 0.90)
+            const buyPrice = Math.floor(currentPrice * 0.9)
 
             // Create a margin order on testnet
             const createResult = await client.marginOrder({
@@ -423,9 +423,9 @@ const main = () => {
         try {
             const currentPrice = await getCurrentPrice()
             // High take-profit price (10% above market)
-            const takeProfitPrice = Math.floor(currentPrice * 1.10)
+            const takeProfitPrice = Math.floor(currentPrice * 1.1)
             // Low stop-loss price (10% below market)
-            const stopPrice = Math.floor(currentPrice * 0.90)
+            const stopPrice = Math.floor(currentPrice * 0.9)
             const stopLimitPrice = Math.floor(stopPrice * 0.99)
 
             // Create a margin OCO order on testnet
