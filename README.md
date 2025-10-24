@@ -7,6 +7,8 @@ want to add [a polyfill](https://github.com/stefanpenner/es6-promise) for them.
 
 For PRs or issues, head over to the [source repository](https://github.com/Ashlar/binance-api-node).
 
+For contribution guidelines and development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ### Installation
 
 ```
