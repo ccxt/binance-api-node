@@ -1,4 +1,4 @@
-# binance-api-node [![build](https://img.shields.io/github/actions/workflow/status/viewblock/binance-api-node/ci.yml?style=flat-square)](https://github.com/ViewBlock/binance-api-node/actions) [![bnb](https://img.shields.io/badge/binance-winner-yellow.svg?style=flat-square)](https://github.com/binance-exchange/binance-api-node)
+# binance-api-node [![telegram](https://patrolavia.github.io/telegram-badge/chat.png)](https://t.me/binance_api_node)[![build](https://img.shields.io/github/actions/workflow/status/viewblock/binance-api-node/ci.yml?style=flat-square)](https://github.com/ViewBlock/binance-api-node/actions) [![bnb](https://img.shields.io/badge/binance-winner-yellow.svg?style=flat-square)](https://github.com/binance-exchange/binance-api-node)
 
 > A complete API wrapper for the [Binance](https://binance.com) API.
 
@@ -8,6 +8,9 @@ want to add [a polyfill](https://github.com/stefanpenner/es6-promise) for them.
 For PRs or issues, head over to the [source repository](https://github.com/Ashlar/binance-api-node).
 
 For contribution guidelines and development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+#### Community Telegram Chat
+https://t.me/binance_api_node
 
 ### Installation
 
@@ -92,6 +95,7 @@ Following examples will use the `await` form, which requires some configuration 
 
 ### Table of Contents
 - [binance-api-node  ](#binance-api-node--)
+      - [Community Telegram Chat](#community-telegram-chat)
     - [Installation](#installation)
     - [Getting started](#getting-started)
     - [Browser vs Node.js](#browser-vs-nodejs)
