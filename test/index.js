@@ -5,8 +5,9 @@ import { candleFields, deliveryCandleFields } from 'http-client'
 import { userEventHandler } from 'websocket'
 
 import { checkFields, createHttpServer } from './utils'
+import { binancePublicConfig } from './config'
 
-const client = Binance({ proxy: 'http://188.245.226.105:8911' })
+const client = Binance(binancePublicConfig)
 
 test('[MISC] Some error codes are defined', t => {
     t.truthy(ErrorCodes, 'The map is there')
