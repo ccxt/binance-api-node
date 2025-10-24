@@ -23,7 +23,7 @@ npm install binance-api-node
 
 Import the module and create a new client. Passing api keys is optional only if
 you don't plan on doing authenticated calls. You can create an api key
-[here](https://www.binance.com/userCenter/createApi.html).
+[here](https://www.binance.com/userCenter/createApi.html). If you want to create demo/testnet keys click [here](https://demo.binance.com/)
 
 ```js
 import Binance from 'binance-api-node'
