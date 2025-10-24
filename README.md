@@ -53,28 +53,9 @@ const client = Binance({
 
 This library works in both browsers and Node.js environments:
 
-**Public API calls**: Work in both environments
-```js
-const client = Binance()
-const time = await client.time()
-const prices = await client.prices()
-```
 
-**Authenticated API calls**: Work in both, but **NOT recommended in browsers** for security
-```js
-const client = Binance({
-  apiKey: 'your-api-key',
-  apiSecret: 'your-api-secret'
-})
-const accountInfo = await client.accountInfo()
-```
 
-**⚠️ Security Warning**: Never expose your API keys in browser code! Use a backend proxy instead.
 
-The library uses:
-- Node.js: `crypto.createHmac()` for signatures
-- Browser: `crypto.subtle` (Web Crypto API) for signatures
-- Both produce identical HMAC-SHA256 signatures
 
 ### Proxy Support (Node.js only)
 
