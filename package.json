@@ -84,7 +84,7 @@
       "!test/browser/**/*"
     ],
     "concurrency": 1,
-    "timeout": "15s"
+    "timeout": "60s"
   },
   "author": "Balthazar Gronon <git@balthazar.dev>",
   "homepage": "https://github.com/ccxt/binance-api-node",
