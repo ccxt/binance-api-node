@@ -7,15 +7,17 @@ const isNode = (() => {
     // Check for Node.js specific features
     if (
         typeof process !== 'undefined' &&
-        process.versions != null &&
-        process.versions.node != null
+        process.versions !== null &&
+        process.versions.node !== null
     ) {
         return true
     }
     // Check for Deno
-    if (typeof Deno !== 'undefined' && Deno.version != null) {
+    /* eslint-disable no-undef */
+    if (typeof Deno !== 'undefined' && Deno.version !== null) {
         return true
     }
+    /* eslint-enable no-undef */
     // Browser or Web Worker
     return false
 })()
@@ -32,7 +34,9 @@ if (isNode) {
     HttpsProxyAgent = proxyAgent.HttpsProxyAgent || proxyAgent.default || proxyAgent
 } else {
     // Browser environment - use native APIs
+    /* eslint-disable no-undef */
     fetch = globalThis.fetch?.bind(globalThis) || window.fetch?.bind(window)
+    /* eslint-enable no-undef */
 }
 
 const getEndpoint = (endpoints, path, testnet) => {

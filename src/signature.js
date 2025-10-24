@@ -3,15 +3,17 @@ const isNode = (() => {
     // Check for Node.js specific features
     if (
         typeof process !== 'undefined' &&
-        process.versions != null &&
-        process.versions.node != null
+        process.versions !== null &&
+        process.versions.node !== null
     ) {
         return true
     }
     // Check for Deno
-    if (typeof Deno !== 'undefined' && Deno.version != null) {
+    /* eslint-disable no-undef */
+    if (typeof Deno !== 'undefined' && Deno.version !== null) {
         return true
     }
+    /* eslint-enable no-undef */
     // Browser or Web Worker
     return false
 })()
@@ -34,25 +36,26 @@ export const createHmacSignature = async (data, secret) => {
     if (isNode) {
         // Node.js - synchronous crypto
         return nodeCrypto.createHmac('sha256', secret).update(data).digest('hex')
-    } else {
-        // Browser - Web Crypto API (async)
-        const encoder = new TextEncoder()
-        const keyData = encoder.encode(secret)
-        const messageData = encoder.encode(data)
-
-        const key = await crypto.subtle.importKey(
-            'raw',
-            keyData,
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['sign'],
-        )
-
-        const signature = await crypto.subtle.sign('HMAC', key, messageData)
-
-        // Convert ArrayBuffer to hex string
-        return Array.from(new Uint8Array(signature))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('')
     }
+    // Browser - Web Crypto API (async)
+    const encoder = new TextEncoder()
+    const keyData = encoder.encode(secret)
+    const messageData = encoder.encode(data)
+
+    const key = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign'],
+    )
+
+    const signature = await crypto.subtle.sign('HMAC', key, messageData)
+
+    // Convert ArrayBuffer to hex string
+    /* eslint-disable no-undef */
+    return Array.from(new Uint8Array(signature))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+    /* eslint-enable no-undef */
 }

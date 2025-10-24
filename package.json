@@ -57,7 +57,7 @@
     "babel-plugin-module-resolver": "^3.2.0",
     "coveralls": "^3.0.9",
     "dotenv": "^8.2.0",
-    "eslint": "^9.38.0",
+    "eslint": "^6.7.1",
     "eslint-config-prettier": "^6.7.0",
     "eslint-config-zavatta": "^6.0.0",
     "glob": "^11.0.3",
@@ -83,9 +83,8 @@
       "!test/browser-compat.mjs",
       "!test/browser/**/*"
     ],
-    "concurrency": 5,
-    "timeout": "15s",
-    "retries": 3
+    "concurrency": 1,
+    "timeout": "15s"
   },
   "author": "Balthazar Gronon <git@balthazar.dev>",
   "homepage": "https://github.com/ccxt/binance-api-node",

@@ -5,14 +5,16 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 const isNode = (() => {
     if (
         typeof process !== 'undefined' &&
-        process.versions != null &&
-        process.versions.node != null
+        process.versions !== null &&
+        process.versions.node !== null
     ) {
         return true
     }
-    if (typeof Deno !== 'undefined' && Deno.version != null) {
+    /* eslint-disable no-undef */
+    if (typeof Deno !== 'undefined' && Deno.version !== null) {
         return true
     }
+    /* eslint-enable no-undef */
     return false
 })()
 
