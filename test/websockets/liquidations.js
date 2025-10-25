@@ -3,8 +3,9 @@ import test from 'ava'
 import Binance from 'index'
 
 import { checkFields } from '../utils'
+import { binancePublicConfig } from '../config'
 
-const client = Binance({ proxy: 'http://188.245.226.105:8911' })
+const client = Binance(binancePublicConfig)
 
 // Note: Liquidation streams are skipped as they may not always have active liquidations to test
 

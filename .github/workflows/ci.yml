@@ -20,23 +20,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install OpenVPN
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openvpn
-
-      - name: Download IVPN config
-        run: |
-          wget -O ivpn-config.zip "https://api.ivpn.net/v5/config/ivpn-openvpn-config.zip?country=NL&city=Amsterdam&proto=udp&port=2049"
-          unzip ivpn-config.zip
-
-      - name: Start IVPN connection
-        run: |
-          echo "${{ secrets.IVPN_ACCOUNT_NUMBER }}" > auth.txt
-          echo "${{ secrets.IVPN_ACCOUNT_NUMBER }}" >> auth.txt
-          sudo openvpn --config Netherlands-Amsterdam.ovpn --auth-user-pass auth.txt &
-          sleep 10  # Wait for VPN to establish
-
       - name: Run typecheck
         run: npm run typecheck
       - name: Lint and Prettier
@@ -44,13 +27,4 @@ jobs:
       - name: Static Tests
         run: npm run static-tests
       - name: All Tests
-        run: npm test
-
-      # - name: Run checks
-      #   run: npm run ci
-
-      - name: Cleanup VPN
-        if: always()
-        run: |
-          sudo killall openvpn || true
-          rm -f auth.txt
+        run: npm run test:ava
