@@ -120,7 +120,10 @@ test('[REST] Signed call without creds', async t => {
     try {
         await client.accountInfo()
     } catch (e) {
-        t.is(e.message, 'You need to pass an API key and secret to make authenticated calls.')
+        t.is(
+            e.message,
+            'You need to pass an API key and secret/privateKey to make authenticated calls.',
+        )
     }
 })
 
@@ -128,7 +131,10 @@ test('[REST] Signed call without creds - attempt getting tradeFee', async t => {
     try {
         await client.tradeFee()
     } catch (e) {
-        t.is(e.message, 'You need to pass an API key and secret to make authenticated calls.')
+        t.is(
+            e.message,
+            'You need to pass an API key and secret/privateKey to make authenticated calls.',
+        )
     }
 })
 

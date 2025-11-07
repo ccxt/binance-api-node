@@ -59,8 +59,20 @@ const client = Binance({
 This library works in both browsers and Node.js environments:
 
 
+### RSA/ECDSA support
 
+This library supports RSA and ED25519 keys out of the box. The usage is straightforward, just provide `privateKey` instead of `apiSecret`.
 
+```js
+
+const apiKey = "ZymCbCxu1LiYIW8IcYSbXQOaAtHaeW3ioCU5qFf5QvUyTfP1runCaY8AwzCaoOaq"
+const privateKey = "-----BEGIN PRIVATE KEY-----\ndMC4CAfAwafYDK2cwaCIEIa+Ax8dMK50wcIcD0Zdf2jaCDoRdaoc7KaadRUh+aLdt\n-----END PRIVATE KEY-----"
+const client = Binance({
+    privateKey,
+    apiKey,
+})
+
+```
 
 ### Proxy Support (Node.js only)
 
@@ -261,6 +273,7 @@ Following examples will use the `await` form, which requires some configuration 
 | ----------- | -------- | -------- | -------------------------------------------- |
 | apiKey      | String   | false    | Required when making private calls           |
 | apiSecret   | String   | false    | Required when making private calls           |
+| privateKey  | String   | false    | Required when using RSA/Ed25519 calls        |
 | getTime     | Function | false    | Time generator, defaults to () => Date.now() |
 | httpBase    | String   | false    | Changes the default endpoint                 |
 | httpFutures | String   | false    | Changes the default endpoint                 |
