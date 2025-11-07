@@ -1,5 +1,3 @@
-import { sign } from 'crypto'
-
 // Robust environment detection for Node.js vs Browser
 const isNode = (() => {
     // Check for Node.js specific features
