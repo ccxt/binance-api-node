@@ -62,21 +62,18 @@ export const createHmacSignature = async (data, secret) => {
 
 export const createAsymmetricSignature = (data, privateKey) => {
     // Handles RSA and ECDASA (Ed25519) private keys
-    const privateKeyObj = { key: privateKey };
+    const privateKeyObj = { key: privateKey }
     const keyObject = nodeCrypto.createPrivateKey(privateKeyObj)
 
-    let signature = '';
+    let signature = ''
 
     if (privateKey.length > 120) {
         // RSA key
-        signature = nodeCrypto
-            .sign('RSA-SHA256', Buffer.from(data), keyObject)
-            .toString('base64');
+        signature = nodeCrypto.sign('RSA-SHA256', Buffer.from(data), keyObject).toString('base64')
         // if (encode) signature = encodeURIComponent(signature);
     } else {
-
         // Ed25519 key
-        signature = nodeCrypto.sign(null, Buffer.from(data), keyObject).toString('base64');
+        signature = nodeCrypto.sign(null, Buffer.from(data), keyObject).toString('base64')
     }
-    return signature;
+    return signature
 }

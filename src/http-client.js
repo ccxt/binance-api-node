@@ -230,10 +230,21 @@ const keyCall =
  * @returns {object} The api response
  */
 const privateCall =
-    ({ apiKey, apiSecret, privateKey, proxy, endpoints, getTime = defaultGetTime, pubCall, testnet }) =>
+    ({
+        apiKey,
+        apiSecret,
+        privateKey,
+        proxy,
+        endpoints,
+        getTime = defaultGetTime,
+        pubCall,
+        testnet,
+    }) =>
     (path, data = {}, method = 'GET', noData, noExtra) => {
         if (!apiKey || (!apiSecret && !privateKey)) {
-            throw new Error('You need to pass an API key and secret/privateKey to make authenticated calls.')
+            throw new Error(
+                'You need to pass an API key and secret/privateKey to make authenticated calls.',
+            )
         }
 
         return (
@@ -266,7 +277,6 @@ const privateCall =
                         signature: sig,
                     }
                 }
-
             })
             .then(({ timestamp, signature }) => {
                 const newData = noExtra ? data : { ...data, timestamp, signature }
