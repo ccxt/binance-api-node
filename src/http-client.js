@@ -1,6 +1,6 @@
 import zip from 'lodash.zipobject'
 import JSONbig from 'json-bigint'
-import { createHmacSignature } from './signature'
+import { createHmacSignature, createAsymmetricSignature } from './signature'
 
 // Robust environment detection for Node.js vs Browser
 const isNode = (() => {
@@ -230,10 +230,10 @@ const keyCall =
  * @returns {object} The api response
  */
 const privateCall =
-    ({ apiKey, apiSecret, proxy, endpoints, getTime = defaultGetTime, pubCall, testnet }) =>
+    ({ apiKey, apiSecret, privateKey, proxy, endpoints, getTime = defaultGetTime, pubCall, testnet }) =>
     (path, data = {}, method = 'GET', noData, noExtra) => {
-        if (!apiKey || !apiSecret) {
-            throw new Error('You need to pass an API key and secret to make authenticated calls.')
+        if (!apiKey || (!apiSecret && !privateKey)) {
+            throw new Error('You need to pass an API key and secret/privateKey to make authenticated calls.')
         }
 
         return (
@@ -250,10 +250,23 @@ const privateCall =
                 const dataToSign = queryString.substr(1)
 
                 // Create signature (async in browser, sync in Node.js)
-                return createHmacSignature(dataToSign, apiSecret).then(signature => ({
-                    timestamp,
-                    signature,
-                }))
+                if (apiSecret) {
+                    return createHmacSignature(dataToSign, apiSecret).then(signature => ({
+                        timestamp,
+                        signature,
+                    }))
+                } else if (privateKey) {
+                    const sig = createAsymmetricSignature(dataToSign, privateKey)
+                    // .then(signature => ({
+                    //     timestamp,
+                    //     signature,
+                    // }))
+                    return {
+                        timestamp,
+                        signature: sig,
+                    }
+                }
+
             })
             .then(({ timestamp, signature }) => {
                 const newData = noExtra ? data : { ...data, timestamp, signature }
