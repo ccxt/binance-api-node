@@ -250,8 +250,8 @@ test('[WS] allTicker', t => {
     return new Promise(resolve => {
         client.ws.allTickers(tickers => {
             t.truthy(Array.isArray(tickers))
-            t.is(tickers[0].eventType, '24hrTicker')
-            checkFields(t, tickers[0], ['symbol', 'priceChange', 'priceChangePercent'])
+            t.is(tickers[0].eventType, '24hrMiniTicker')
+            checkFields(t, tickers[0], ['symbol', 'open', 'volume'])
             resolve()
         })
     })
