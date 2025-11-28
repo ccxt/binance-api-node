@@ -114,7 +114,9 @@ export {
   MarginMaxBorrow,
   MarginOrderParams,
   MarginOrderOcoParams,
-  MarginEndpoints
+  MarginEndpoints,
+  CapitalFlowType,
+  MarginInterestHistory
 } from './types/margin';
 
 export * from './types/portfolio-margin';

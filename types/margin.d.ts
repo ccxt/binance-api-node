@@ -10,6 +10,25 @@ export interface MarginAsset {
   netAsset: string;
 }
 
+export type CapitalFlowType =
+  | 'TRANSFER'
+  | 'BORROW'
+  | 'REPAY'
+  | 'BUY_INCOME'
+  | 'BUY_EXPENSE'
+  | 'SELL_INCOME'
+  | 'SELL_EXPENSE'
+  | 'TRADING_COMMISSION'
+  | 'BUY_LIQUIDATION'
+  | 'SELL_LIQUIDATION'
+  | 'REPAY_LIQUIDATION'
+  | 'OTHER_LIQUIDATION'
+  | 'LIQUIDATION_FEE'
+  | 'SMALL_BALANCE_CONVERT'
+  | 'COMMISSION_RETURN'
+  | 'SMALL_CONVERT'
+
+
 export interface MarginAccountInfo {
   borrowEnabled: boolean;
   marginLevel: string;
@@ -93,11 +112,61 @@ export interface MarginOrderOcoParams extends Omit<MarginOrderParams, 'type'> {
   limitTimeInForce?: TimeInForce;
 }
 
+export interface MarginInterestHistory {
+  txId: string;
+  interestAccuredTime: number;
+  asset: string;
+  rawAsset?: string;
+  principal: string;
+  interest: string;
+  interestRate: string;
+  type: string;
+  isolatedSymbol: string;
+}
+
 export interface MarginEndpoints extends BinanceRestClient {
   // Account endpoints
   marginAccountInfo(): Promise<MarginAccountInfo>;
+  marginCapitalFlow(params?: {
+    asset?: string;
+    /**
+     * Required when querying isolated data
+     */
+    symbol?: string;
+    type?: CapitalFlowType;
+    /**
+     * Only supports querying the data of the last 90 days
+     */
+    startTime?: number;
+    endTime?: number;
+    fromId?: number;
+    /**
+     * The number of data items returned each time is limited. Default 500; Max 1000.
+     */
+    limit?: number;
+    recvWindow?: number;
+  }): Promise<
+    {
+      id: number;
+      tranId: number;
+      timestamp: number;
+      asset: string;
+      symbol: string;
+      type: CapitalFlowType;
+      amount: number;
+    }[]
+  >;
   marginIsolatedAccount(params: { symbols: string }): Promise<MarginIsolatedAccount>;
   marginMaxBorrow(params: { asset: string; isolatedSymbol?: string }): Promise<MarginMaxBorrow>;
+  marginInterestHistory(params: {
+    asset?: string;
+    isolatedSymbol?: string;
+    startTime?: number;
+    endTime?: number;
+    current?: number;
+    size?: number;
+    timestamp?: number;
+  }): Promise<{ total: number; rows: MarginInterestHistory[] }>;
   marginCreateIsolated(params: { base: string; quote: string }): Promise<{ success: boolean; symbol: string }>;
   marginIsolatedTransfer(params: {
     asset: string;
@@ -129,6 +198,67 @@ export interface MarginEndpoints extends BinanceRestClient {
   }>;
   disableMarginAccount(params: { symbol: string }): Promise<{ success: boolean; symbol: string }>;
   enableMarginAccount(params: { symbol: string }): Promise<{ success: boolean; symbol: string }>;
+  isolatedMarginAllPairs(params: {
+    symbol?: string
+  }): Promise<
+    {
+      base: string;
+      isBuyAllowed: boolean;
+      isMarginTrade: boolean;
+      isSellAllowed: boolean;
+      quote: string;
+      symbol: string;
+    }[]
+  >;
+  isolatedMarginAccount(params: {
+    /**
+     * Max 5 symbols can be sent; separated by ",". e.g. "BTCUSDT,BNBUSDT,ADAUSDT"
+     */
+    symbols?: string;
+    recvWindow?: number;
+  }): Promise<{
+    assets: {
+      baseAsset: {
+        asset: string;
+        borrowEnabled: boolean;
+        borrowed: number;
+        free: number;
+        interest: number;
+        locked: number;
+        netAsset: number;
+        netAssetOfBtc: number;
+        repayEnabled: boolean;
+        totalAsset: number;
+      },
+      quoteAsset: {
+        asset: string;
+        borrowEnabled: boolean;
+        borrowed: number;
+        free: number;
+        interest: number;
+        locked: number;
+        netAsset: number;
+        netAssetOfBtc: number;
+        repayEnabled: boolean;
+        totalAsset: number;
+      };
+      symbol: string;
+      isolatedCreated: boolean;
+      enabled: boolean;
+      marginLevel: number;
+      marginLevelStatus:
+      | 'EXCESSIVE'
+      | 'NORMAL'
+      | 'MARGIN_CALL'
+      | 'PRE_LIQUIDATION'
+      | 'FORCE_LIQUIDATION';
+      marginRatio: number;
+      indexPrice: number;
+      liquidatePrice: number;
+      liquidateRate: number;
+      tradeEnabled: boolean;
+    }[]
+  }>;
   marginAccount(): Promise<MarginAccountInfo>;
 
   // Order endpoints
