@@ -1007,7 +1007,7 @@ export default opts => {
         bookTicker,
         ticker,
         allTickers,
-        allTickersDeprecated, // uses deprecated stream
+        allTickersDeprecated,
         miniTicker,
         allMiniTickers,
         customSubStream,
