@@ -136,7 +136,7 @@ test('[WS] allTickers', t => {
         const clean = client.ws.allTickers(tickers => {
             t.truthy(Array.isArray(tickers))
             t.is(tickers[0].eventType, '24hrMiniTicker')
-            checkFields(t, tickers[0], ['symbol', 'priceChange', 'priceChangePercent'])
+            checkFields(t, tickers[0], ['symbol', 'open', 'volume'])
             clean()
             resolve()
         })
