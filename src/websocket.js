@@ -385,6 +385,33 @@ const allTickers = (cb, transform = true, variator) => {
                 : variator === 'delivery'
                   ? endpoints.delivery
                   : endpoints.base
+        }/!miniTicker@arr`,
+    )
+
+    w.onmessage = msg => {
+        const arr = JSONbig.parse(msg.data)
+        cb(
+            transform
+                ? variator === 'futures'
+                    ? arr.map(m => futuresTickerTransform(m))
+                    : variator === 'delivery'
+                      ? arr.map(m => deliveryTickerTransform(m))
+                      : arr.map(m => tickerTransform(m))
+                : arr,
+        )
+    }
+
+    return options => w.close(1000, 'Close handle was called', { keepClosed: true, ...options })
+}
+
+const allTickersDeprecated = (cb, transform = true, variator) => {
+    const w = new openWebSocket(
+        `${
+            variator === 'futures'
+                ? endpoints.futures
+                : variator === 'delivery'
+                  ? endpoints.delivery
+                  : endpoints.base
         }/!ticker@arr`,
     )
 
@@ -980,6 +1007,7 @@ export default opts => {
         bookTicker,
         ticker,
         allTickers,
+        allTickersDeprecated, // uses deprecated stream
         miniTicker,
         allMiniTickers,
         customSubStream,
