@@ -377,3 +377,60 @@ test.serial('[REST] delivery MarketBuy', async t => {
     t.is(obj.quantity, '0.1')
     t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
+
+test.serial('[REST] Futures RPI Depth', async t => {
+    try {
+        await binance.futuresRpiDepth({ symbol: 'BTCUSDT', limit: 100 })
+    } catch (e) {
+        // it can throw an error because of the mocked response
+    }
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/rpiDepth?symbol=BTCUSDT&limit=100')
+})
+
+test.serial('[REST] Futures RPI Depth no limit', async t => {
+    try {
+        await binance.futuresRpiDepth({ symbol: 'ETHUSDT' })
+    } catch (e) {
+        // it can throw an error because of the mocked response
+    }
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/rpiDepth?symbol=ETHUSDT')
+})
+
+test.serial('[REST] Futures Symbol ADL Risk', async t => {
+    await binance.futuresSymbolAdlRisk({ symbol: 'BTCUSDT' })
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/symbolAdlRisk?symbol=BTCUSDT')
+})
+
+test.serial('[REST] Futures Symbol ADL Risk all symbols', async t => {
+    await binance.futuresSymbolAdlRisk()
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/symbolAdlRisk')
+})
+
+test.serial('[REST] Futures Commission Rate', async t => {
+    await binance.futuresCommissionRate({ symbol: 'BTCUSDT' })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/commissionRate'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/commissionRate?', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+})
+
+test.serial('[REST] Futures RPI Order', async t => {
+    await binance.futuresOrder({
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        type: 'LIMIT',
+        quantity: 0.001,
+        price: 50000,
+        timeInForce: 'RPI',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/order'))
+    const obj = urlToObject(interceptedUrl.replace('https://fapi.binance.com/fapi/v1/order?', ''))
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'LIMIT')
+    t.is(obj.quantity, '0.001')
+    t.is(obj.price, '50000')
+    t.is(obj.timeInForce, 'RPI')
+    t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
+})

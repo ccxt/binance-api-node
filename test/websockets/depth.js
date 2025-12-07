@@ -166,3 +166,27 @@ test.skip('[WS] deliveryPartialDepth - single symbol', t => {
         )
     })
 })
+
+test('[WS] futuresRpiDepth - single symbol', t => {
+    return new Promise(resolve => {
+        const clean = client.ws.futuresRpiDepth('BTCUSDT', depth => {
+            checkFields(t, depth, [
+                'eventType',
+                'eventTime',
+                'transactionTime',
+                'symbol',
+                'firstUpdateId',
+                'finalUpdateId',
+                'prevFinalUpdateId',
+                'bidDepth',
+                'askDepth',
+            ])
+            t.is(depth.symbol, 'BTCUSDT')
+            t.truthy(depth.prevFinalUpdateId !== undefined)
+            t.truthy(Array.isArray(depth.bidDepth))
+            t.truthy(Array.isArray(depth.askDepth))
+            clean()
+            resolve()
+        })
+    })
+})
