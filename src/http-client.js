@@ -603,61 +603,71 @@ export default opts => {
             // Check if this is a request for a conditional/algo order
             const isConditional = payload?.conditional
             const hasAlgoId = payload?.algoId || payload?.clientAlgoId
+            let payloadCopy = payload
             if (payload && 'conditional' in payload) {
-                delete payload.conditional
+                payloadCopy = { ...payload }
+                delete payloadCopy.conditional
             }
 
             if (isConditional || hasAlgoId) {
-                return privCall('/fapi/v1/algoOrder', payload)
+                return privCall('/fapi/v1/algoOrder', payloadCopy)
             }
-            return privCall('/fapi/v1/order', payload)
+            return privCall('/fapi/v1/order', payloadCopy)
         },
         futuresCancelOrder: payload => {
             // Check if this is a request for a conditional/algo order
             const isConditional = payload?.conditional
             const hasAlgoId = payload?.algoId || payload?.clientAlgoId
+            let payloadCopy = payload
             if (payload && 'conditional' in payload) {
-                delete payload.conditional
+                payloadCopy = { ...payload }
+                delete payloadCopy.conditional
             }
 
             if (isConditional || hasAlgoId) {
-                return privCall('/fapi/v1/algoOrder', payload, 'DELETE')
+                return privCall('/fapi/v1/algoOrder', payloadCopy, 'DELETE')
             }
-            return privCall('/fapi/v1/order', payload, 'DELETE')
+            return privCall('/fapi/v1/order', payloadCopy, 'DELETE')
         },
         futuresCancelAllOpenOrders: payload => {
             const isConditional = payload?.conditional
+            let payloadCopy = payload
             if (payload && 'conditional' in payload) {
-                delete payload.conditional
+                payloadCopy = { ...payload }
+                delete payloadCopy.conditional
             }
 
             if (isConditional) {
-                return privCall('/fapi/v1/algoOpenOrders', payload, 'DELETE')
+                return privCall('/fapi/v1/algoOpenOrders', payloadCopy, 'DELETE')
             }
-            return privCall('/fapi/v1/allOpenOrders', payload, 'DELETE')
+            return privCall('/fapi/v1/allOpenOrders', payloadCopy, 'DELETE')
         },
         futuresCancelBatchOrders: payload => privCall('/fapi/v1/batchOrders', payload, 'DELETE'),
         futuresOpenOrders: payload => {
             const isConditional = payload?.conditional
+            let payloadCopy = payload
             if (payload && 'conditional' in payload) {
-                delete payload.conditional
+                payloadCopy = { ...payload }
+                delete payloadCopy.conditional
             }
 
             if (isConditional) {
-                return privCall('/fapi/v1/openAlgoOrders', payload)
+                return privCall('/fapi/v1/openAlgoOrders', payloadCopy)
             }
-            return privCall('/fapi/v1/openOrders', payload)
+            return privCall('/fapi/v1/openOrders', payloadCopy)
         },
         futuresAllOrders: payload => {
             const isConditional = payload?.conditional
+            let payloadCopy = payload
             if (payload && 'conditional' in payload) {
-                delete payload.conditional
+                payloadCopy = { ...payload }
+                delete payloadCopy.conditional
             }
 
             if (isConditional) {
-                return privCall('/fapi/v1/allAlgoOrders', payload)
+                return privCall('/fapi/v1/allAlgoOrders', payloadCopy)
             }
-            return privCall('/fapi/v1/allOrders', payload)
+            return privCall('/fapi/v1/allOrders', payloadCopy)
         },
         futuresPositionRisk: payload => privCall('/fapi/v2/positionRisk', payload),
         futuresLeverageBracket: payload => privCall('/fapi/v1/leverageBracket', payload),
