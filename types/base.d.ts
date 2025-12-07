@@ -54,6 +54,20 @@ export enum TimeInForce {
   FOK = 'FOK'  // Fill or Kill
 }
 
+export enum OrderStatus {
+  NEW = 'NEW',
+  PARTIALLY_FILLED = 'PARTIALLY_FILLED',
+  FILLED = 'FILLED',
+  CANCELED = 'CANCELED',
+  PENDING_CANCEL = 'PENDING_CANCEL',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+  ACCEPTED = 'ACCEPTED',
+  TRIGGERING = 'TRIGGERING',
+  TRIGGERED = 'TRIGGERED',
+  FINISHED = 'FINISHED'
+}
+
 export enum TradingType {
   SPOT = 'SPOT',
   MARGIN = 'MARGIN'

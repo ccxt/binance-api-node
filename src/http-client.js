@@ -570,15 +570,95 @@ export default opts => {
         futuresFundingRate: payload =>
             checkParams('fundingRate', payload, ['symbol']) &&
             pubCall('/fapi/v1/fundingRate', payload),
-        futuresOrder: payload => order(privCall, payload, '/fapi/v1/order'),
+        futuresOrder: payload => {
+            // Check if this is a conditional order type that should be routed to algo endpoint
+            const orderType = payload?.type?.toUpperCase()
+            const conditionalTypes = [
+                'STOP',
+                'STOP_MARKET',
+                'TAKE_PROFIT',
+                'TAKE_PROFIT_MARKET',
+                'TRAILING_STOP_MARKET',
+            ]
+
+            if (orderType && conditionalTypes.includes(orderType)) {
+                // Route to algo order endpoint
+                const algoPayload = { ...payload }
+                if (!algoPayload.clientAlgoId) {
+                    algoPayload.clientAlgoId = futuresP()
+                }
+                delete algoPayload.newClientOrderId
+                algoPayload.algoType = 'CONDITIONAL'
+                if (algoPayload.stopPrice && !algoPayload.triggerPrice) {
+                    algoPayload.triggerPrice = algoPayload.stopPrice
+                    delete algoPayload.stopPrice
+                }
+                return privCall('/fapi/v1/algoOrder', algoPayload, 'POST')
+            }
+            // Use regular order endpoint
+            return order(privCall, payload, '/fapi/v1/order')
+        },
         futuresBatchOrders: payload => privCall('/fapi/v1/batchOrders', payload, 'POST'),
-        futuresGetOrder: payload => privCall('/fapi/v1/order', payload),
-        futuresCancelOrder: payload => privCall('/fapi/v1/order', payload, 'DELETE'),
-        futuresCancelAllOpenOrders: payload =>
-            privCall('/fapi/v1/allOpenOrders', payload, 'DELETE'),
+        futuresGetOrder: payload => {
+            // Check if this is a request for a conditional/algo order
+            const isConditional = payload?.conditional
+            const hasAlgoId = payload?.algoId || payload?.clientAlgoId
+            if (payload && 'conditional' in payload) {
+                delete payload.conditional
+            }
+
+            if (isConditional || hasAlgoId) {
+                return privCall('/fapi/v1/algoOrder', payload)
+            }
+            return privCall('/fapi/v1/order', payload)
+        },
+        futuresCancelOrder: payload => {
+            // Check if this is a request for a conditional/algo order
+            const isConditional = payload?.conditional
+            const hasAlgoId = payload?.algoId || payload?.clientAlgoId
+            if (payload && 'conditional' in payload) {
+                delete payload.conditional
+            }
+
+            if (isConditional || hasAlgoId) {
+                return privCall('/fapi/v1/algoOrder', payload, 'DELETE')
+            }
+            return privCall('/fapi/v1/order', payload, 'DELETE')
+        },
+        futuresCancelAllOpenOrders: payload => {
+            const isConditional = payload?.conditional
+            if (payload && 'conditional' in payload) {
+                delete payload.conditional
+            }
+
+            if (isConditional) {
+                return privCall('/fapi/v1/algoOpenOrders', payload, 'DELETE')
+            }
+            return privCall('/fapi/v1/allOpenOrders', payload, 'DELETE')
+        },
         futuresCancelBatchOrders: payload => privCall('/fapi/v1/batchOrders', payload, 'DELETE'),
-        futuresOpenOrders: payload => privCall('/fapi/v1/openOrders', payload),
-        futuresAllOrders: payload => privCall('/fapi/v1/allOrders', payload),
+        futuresOpenOrders: payload => {
+            const isConditional = payload?.conditional
+            if (payload && 'conditional' in payload) {
+                delete payload.conditional
+            }
+
+            if (isConditional) {
+                return privCall('/fapi/v1/openAlgoOrders', payload)
+            }
+            return privCall('/fapi/v1/openOrders', payload)
+        },
+        futuresAllOrders: payload => {
+            const isConditional = payload?.conditional
+            if (payload && 'conditional' in payload) {
+                delete payload.conditional
+            }
+
+            if (isConditional) {
+                return privCall('/fapi/v1/allAlgoOrders', payload)
+            }
+            return privCall('/fapi/v1/allOrders', payload)
+        },
         futuresPositionRisk: payload => privCall('/fapi/v2/positionRisk', payload),
         futuresLeverageBracket: payload => privCall('/fapi/v1/leverageBracket', payload),
         futuresAccountBalance: payload => privCall('/fapi/v2/balance', payload),
@@ -594,6 +674,23 @@ export default opts => {
         futuresIncome: payload => privCall('/fapi/v1/income', payload),
         getMultiAssetsMargin: payload => privCall('/fapi/v1/multiAssetsMargin', payload),
         setMultiAssetsMargin: payload => privCall('/fapi/v1/multiAssetsMargin', payload, 'POST'),
+
+        // Algo Orders (Conditional Orders)
+        futuresCreateAlgoOrder: payload => {
+            if (!payload.clientAlgoId) {
+                payload.clientAlgoId = futuresP()
+            }
+            if (!payload.algoType) {
+                payload.algoType = 'CONDITIONAL'
+            }
+            return privCall('/fapi/v1/algoOrder', payload, 'POST')
+        },
+        futuresCancelAlgoOrder: payload => privCall('/fapi/v1/algoOrder', payload, 'DELETE'),
+        futuresCancelAllAlgoOpenOrders: payload =>
+            privCall('/fapi/v1/algoOpenOrders', payload, 'DELETE'),
+        futuresGetAlgoOrder: payload => privCall('/fapi/v1/algoOrder', payload),
+        futuresGetOpenAlgoOrders: payload => privCall('/fapi/v1/openAlgoOrders', payload),
+        futuresGetAllAlgoOrders: payload => privCall('/fapi/v1/allAlgoOrders', payload),
 
         // Delivery endpoints
         deliveryPing: () => pubCall('/dapi/v1/ping').then(() => true),
