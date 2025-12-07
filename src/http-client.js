@@ -595,7 +595,7 @@ export default opts => {
         getMultiAssetsMargin: payload => privCall('/fapi/v1/multiAssetsMargin', payload),
         setMultiAssetsMargin: payload => privCall('/fapi/v1/multiAssetsMargin', payload, 'POST'),
         futuresRpiDepth: payload => book(pubCall, payload, '/fapi/v1/rpiDepth'),
-        futuresSymbolAdlRisk: payload => privCall('/fapi/v1/symbolAdlRisk', payload),
+        futuresSymbolAdlRisk: payload => pubCall('/fapi/v1/symbolAdlRisk', payload),
         futuresCommissionRate: payload => privCall('/fapi/v1/commissionRate', payload),
 
         // Delivery endpoints
