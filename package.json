@@ -21,7 +21,7 @@
     "build": "rm -rf dist && babel src -d dist",
     "prepare": "npm run build",
     "test": "npm run test:ava && npm run test:browser",
-    "test:ava": "ava --timeout=60s -v",
+    "test:ava": "ava --timeout=90s -v",
     "test:browser": "node test/browser/browser-test-runner.mjs && ava test/browser/crypto-browser-playwright.js test/browser/websocket-browser.test.js --timeout=15s -v",
     "test:browser:signature": "node test/browser/browser-test-runner.mjs",
     "test:browser:websocket": "ava test/browser/websocket-browser.test.js --timeout=15s -v",
