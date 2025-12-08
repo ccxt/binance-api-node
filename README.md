@@ -28,6 +28,7 @@ Import the module and create a new client. Passing api keys is optional only if
 you don't plan on doing authenticated calls. You can create an api key
 [here](https://www.binance.com/userCenter/createApi.html). If you want to create demo/testnet keys click [here](https://demo.binance.com/)
 
+
 ```js
 import Binance from 'binance-api-node'
 
@@ -91,6 +92,7 @@ client.ws.ticker('BTCUSDT', ticker => console.log(ticker))
 ```
 
 **Notes:**
+- `binance-api-node` fully supports the new algo service introduced on the Decemeber 9th of 2025
 - Proxy support is only available in Node.js environment
 - Browsers use system/OS proxy settings automatically
 - Supports HTTP and HTTPS proxies (use `http://` or `https://` protocol)

@@ -1,6 +1,6 @@
 {
   "name": "binance-api-node",
-  "version": "0.13.3",
+  "version": "0.13.5",
   "description": "A node API wrapper for Binance",
   "main": "dist",
   "browser": {
@@ -15,7 +15,8 @@
   },
   "files": [
     "dist",
-    "index.d.ts"
+    "index.d.ts",
+    "types"
   ],
   "scripts": {
     "build": "rm -rf dist && babel src -d dist",
