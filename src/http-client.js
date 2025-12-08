@@ -684,6 +684,9 @@ export default opts => {
         futuresIncome: payload => privCall('/fapi/v1/income', payload),
         getMultiAssetsMargin: payload => privCall('/fapi/v1/multiAssetsMargin', payload),
         setMultiAssetsMargin: payload => privCall('/fapi/v1/multiAssetsMargin', payload, 'POST'),
+        futuresRpiDepth: payload => book(pubCall, payload, '/fapi/v1/rpiDepth'),
+        futuresSymbolAdlRisk: payload => pubCall('/fapi/v1/symbolAdlRisk', payload),
+        futuresCommissionRate: payload => privCall('/fapi/v1/commissionRate', payload),
 
         // Algo Orders (Conditional Orders)
         futuresCreateAlgoOrder: payload => {

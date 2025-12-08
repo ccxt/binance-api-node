@@ -106,6 +106,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
     time: number;
     isBuyerMaker: boolean;
     isBestMatch: boolean;
+    isRPITrade?: boolean;
   }>>;
   futuresDailyStats(payload?: { symbol?: string }): Promise<Array<{
     symbol: string;
@@ -617,4 +618,22 @@ export interface FuturesEndpoints extends BinanceRestClient {
     createTime: number;
     updateTime: number;
   }>>;
-} 
+  futuresRpiDepth(payload: { symbol: string; limit?: number }): Promise<{
+    lastUpdateId: number;
+    asks: Array<[string, string]>;
+    bids: Array<[string, string]>;
+  }>;
+  futuresSymbolAdlRisk(payload?: { symbol?: string }): Promise<Array<{
+    symbol: string;
+    adlLevel: number;
+  }> | {
+    symbol: string;
+    adlLevel: number;
+  }>;
+  futuresCommissionRate(payload: { symbol: string }): Promise<{
+    symbol: string;
+    makerCommissionRate: string;
+    takerCommissionRate: string;
+    rpiCommissionRate?: string;
+  }>;
+}

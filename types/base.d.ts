@@ -51,7 +51,8 @@ export enum OrderSide {
 export enum TimeInForce {
   GTC = 'GTC', // Good Till Cancel
   IOC = 'IOC', // Immediate or Cancel
-  FOK = 'FOK'  // Fill or Kill
+  FOK = 'FOK', // Fill or Kill
+  RPI = 'RPI'  // Retail Price Improvement
 }
 
 export enum OrderStatus {
