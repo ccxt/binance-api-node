@@ -82,6 +82,24 @@ const depth = (payload, cb, transform = true, variator) => {
         )
 }
 
+const futuresRpiDepth = (payload, cb, transform = true) => {
+    const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
+        const symbolName = symbol.toLowerCase()
+        const w = openWebSocket(`${endpoints.futures}/${symbolName}@rpiDepth@500ms`)
+        w.onmessage = msg => {
+            const obj = JSONbig.parse(msg.data)
+            cb(transform ? futuresDepthTransform(obj) : obj)
+        }
+
+        return w
+    })
+
+    return options =>
+        cache.forEach(w =>
+            w.close(1000, 'Close handle was called', { keepClosed: true, ...options }),
+        )
+}
+
 const partialDepthTransform = (symbol, level, m) => ({
     symbol,
     level,
@@ -1017,6 +1035,7 @@ export default opts => {
 
         futuresDepth: (payload, cb, transform) => depth(payload, cb, transform, 'futures'),
         deliveryDepth: (payload, cb, transform) => depth(payload, cb, transform, 'delivery'),
+        futuresRpiDepth,
         futuresPartialDepth: (payload, cb, transform) =>
             partialDepth(payload, cb, transform, 'futures'),
         deliveryPartialDepth: (payload, cb, transform) =>
