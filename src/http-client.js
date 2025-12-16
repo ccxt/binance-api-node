@@ -486,6 +486,7 @@ export default opts => {
 
         // Order endpoints
         order: payload => order(privCall, payload, '/api/v3/order'),
+        updateOrder: payload => privCall('/api/v3/order/cancelReplace', payload, 'POST'),
         orderOco: payload => orderOco(privCall, payload, '/api/v3/order/oco'),
         orderTest: payload => order(privCall, payload, '/api/v3/order/test'),
         getOrder: payload => privCall('/api/v3/order', payload),
@@ -597,6 +598,15 @@ export default opts => {
             }
             // Use regular order endpoint
             return order(privCall, payload, '/fapi/v1/order')
+        },
+        futuresUpdateOrder: payload => {
+            if (payload && 'conditional' in payload) {
+                // for now it is not supported
+                // const payloadCopy = { ...payload }
+                // delete payloadCopy.conditional
+                // return privCall('/fapi/v1/algoOrder', payloadCopy, 'PUT')
+            }
+            return privCall('/fapi/v1/order', payload, 'PUT')
         },
         futuresBatchOrders: payload => privCall('/fapi/v1/batchOrders', payload, 'POST'),
         futuresGetOrder: payload => {
