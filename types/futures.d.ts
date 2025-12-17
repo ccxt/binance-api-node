@@ -106,6 +106,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
     time: number;
     isBuyerMaker: boolean;
     isBestMatch: boolean;
+    isRPITrade?: boolean;
   }>>;
   futuresDailyStats(payload?: { symbol?: string }): Promise<Array<{
     symbol: string;
@@ -183,6 +184,46 @@ export interface FuturesEndpoints extends BinanceRestClient {
       commissionAsset: string;
     }>;
   }>;
+  futuresUpdateOrder(payload: {
+    orderId?: number;
+    origClientOrderId?: string;
+    symbol: string;
+    side: OrderSide;
+    type: OrderType;
+    quantity?: string;
+    price?: string;
+    priceMatch?: string;
+  }): Promise<{
+    symbol: string;
+    orderId: number;
+    orderListId: number;
+    clientOrderId: string;
+    transactTime: number;
+    price: string;
+    origQty: string;
+    executedQty: string;
+    cumQuote: string;
+    status: OrderStatus;
+    timeInForce: TimeInForce;
+    type: OrderType;
+    side: OrderSide;
+    marginBuyBorrowAmount: string;
+    marginBuyBorrowAsset: string;
+    stopPrice?: string;
+    workingType?: string;
+    priceProtect?: string;
+    origType?: string;
+    priceMatch?: string;
+    selfTradePreventionMode?: string;
+    goodTillDate?: number;
+    updateTime?: number;
+    fills: Array<{
+      price: string;
+      qty: string;
+      commission: string;
+      commissionAsset: string;
+    }>;
+  }>;
   futuresBatchOrders(payload: { batchOrders: Array<{
     symbol: string;
     side: OrderSide;
@@ -222,7 +263,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
       commissionAsset: string;
     }>;
   }>>;
-  futuresGetOrder(payload: { symbol: string; orderId?: number; origClientOrderId?: string }): Promise<{
+  futuresGetOrder(payload: { symbol: string; orderId?: number; origClientOrderId?: string; conditional?: boolean; algoId?: number; clientAlgoId?: string }): Promise<{
     symbol: string;
     orderId: number;
     clientOrderId: string;
@@ -244,7 +285,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
       commissionAsset: string;
     }>;
   }>;
-  futuresCancelOrder(payload: { symbol: string; orderId?: number; origClientOrderId?: string }): Promise<{
+  futuresCancelOrder(payload: { symbol: string; orderId?: number; origClientOrderId?: string; conditional?: boolean; algoId?: number; clientAlgoId?: string }): Promise<{
     symbol: string;
     origClientOrderId: string;
     orderId: number;
@@ -260,7 +301,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
     type: OrderType;
     side: OrderSide;
   }>;
-  futuresCancelAllOpenOrders(payload: { symbol: string }): Promise<Array<{
+  futuresCancelAllOpenOrders(payload: { symbol: string; conditional?: boolean }): Promise<Array<{
     symbol: string;
     origClientOrderId: string;
     orderId: number;
@@ -293,7 +334,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
     type: OrderType;
     side: OrderSide;
   }>>;
-  futuresOpenOrders(payload?: { symbol?: string }): Promise<Array<{
+  futuresOpenOrders(payload?: { symbol?: string; conditional?: boolean }): Promise<Array<{
     symbol: string;
     orderId: number;
     orderListId: number;
@@ -316,7 +357,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
       commissionAsset: string;
     }>;
   }>>;
-  futuresAllOrders(payload: { symbol: string; orderId?: number; startTime?: number; endTime?: number; limit?: number }): Promise<Array<{
+  futuresAllOrders(payload: { symbol: string; orderId?: number; startTime?: number; endTime?: number; limit?: number; conditional?: boolean }): Promise<Array<{
     symbol: string;
     orderId: number;
     orderListId: number;
@@ -358,7 +399,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
     unrealizedPnl: string;
     marginLevel: string;
   }>>;
-  futuresLeverageBracket(payload: { symbol: string }): Promise<Array<{
+  futuresLeverageBracket(payload: { symbol?: string }): Promise<Array<{
     symbol: string;
     brackets: Array<{
       bracket: number;
@@ -504,4 +545,135 @@ export interface FuturesEndpoints extends BinanceRestClient {
     code: number;
     msg: string;
   }>;
-} 
+
+  // Algo Orders (Conditional Orders)
+  futuresCreateAlgoOrder(payload: {
+    symbol: string;
+    side: OrderSide;
+    type: 'STOP' | 'TAKE_PROFIT' | 'STOP_MARKET' | 'TAKE_PROFIT_MARKET' | 'TRAILING_STOP_MARKET';
+    algoType?: 'CONDITIONAL';
+    positionSide?: 'BOTH' | 'LONG' | 'SHORT';
+    timeInForce?: TimeInForce;
+    quantity?: string;
+    price?: string;
+    triggerPrice?: string;
+    workingType?: 'MARK_PRICE' | 'CONTRACT_PRICE';
+    priceMatch?: string;
+    closePosition?: boolean;
+    priceProtect?: string;
+    reduceOnly?: string;
+    activationPrice?: string;
+    callbackRate?: string;
+    clientAlgoId?: string;
+    selfTradePreventionMode?: 'EXPIRE_TAKER' | 'EXPIRE_MAKER' | 'EXPIRE_BOTH' | 'NONE';
+    goodTillDate?: number;
+    newOrderRespType?: 'ACK' | 'RESULT';
+    recvWindow?: number;
+  }): Promise<{
+    symbol: string;
+    algoId: number;
+    clientAlgoId: string;
+    transactTime: number;
+    algoType: string;
+    side: OrderSide;
+    type: string;
+    status: OrderStatus;
+  }>;
+
+  futuresCancelAlgoOrder(payload: {
+    symbol: string;
+    algoId?: number;
+    clientAlgoId?: string;
+    recvWindow?: number;
+  }): Promise<{
+    symbol: string;
+    algoId: number;
+    clientAlgoId: string;
+    status: OrderStatus;
+  }>;
+
+  futuresCancelAllAlgoOpenOrders(payload: {
+    symbol: string;
+    recvWindow?: number;
+  }): Promise<{
+    code: number;
+    msg: string;
+  }>;
+
+  futuresGetAlgoOrder(payload: {
+    symbol: string;
+    algoId?: number;
+    clientAlgoId?: string;
+    recvWindow?: number;
+  }): Promise<{
+    symbol: string;
+    algoId: number;
+    clientAlgoId: string;
+    side: OrderSide;
+    type: string;
+    algoType: string;
+    quantity: string;
+    price?: string;
+    triggerPrice?: string;
+    status: OrderStatus;
+    createTime: number;
+    updateTime: number;
+  }>;
+
+  futuresGetOpenAlgoOrders(payload?: {
+    symbol?: string;
+    recvWindow?: number;
+  }): Promise<Array<{
+    symbol: string;
+    algoId: number;
+    clientAlgoId: string;
+    side: OrderSide;
+    type: string;
+    algoType: string;
+    quantity: string;
+    price?: string;
+    triggerPrice?: string;
+    status: OrderStatus;
+    createTime: number;
+    updateTime: number;
+  }>>;
+
+  futuresGetAllAlgoOrders(payload: {
+    symbol: string;
+    startTime?: number;
+    endTime?: number;
+    limit?: number;
+    recvWindow?: number;
+  }): Promise<Array<{
+    symbol: string;
+    algoId: number;
+    clientAlgoId: string;
+    side: OrderSide;
+    type: string;
+    algoType: string;
+    quantity: string;
+    price?: string;
+    triggerPrice?: string;
+    status: OrderStatus;
+    createTime: number;
+    updateTime: number;
+  }>>;
+  futuresRpiDepth(payload: { symbol: string; limit?: number }): Promise<{
+    lastUpdateId: number;
+    asks: Array<[string, string]>;
+    bids: Array<[string, string]>;
+  }>;
+  futuresSymbolAdlRisk(payload?: { symbol?: string }): Promise<Array<{
+    symbol: string;
+    adlLevel: number;
+  }> | {
+    symbol: string;
+    adlLevel: number;
+  }>;
+  futuresCommissionRate(payload: { symbol: string }): Promise<{
+    symbol: string;
+    makerCommissionRate: string;
+    takerCommissionRate: string;
+    rpiCommissionRate?: string;
+  }>;
+}

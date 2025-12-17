@@ -38,6 +38,13 @@ test.serial.beforeEach(t => {
             return { success: true }
         })
     nock(/.*/)
+        .put(/.*/)
+        .reply(200, function (uri, requestBody) {
+            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
+            interceptedBody = requestBody
+            return { success: true }
+        })
+    nock(/.*/)
         .delete(/.*/)
         .reply(200, function (uri, requestBody) {
             interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
@@ -277,6 +284,24 @@ test.serial('[REST] Futures LimitSell', async t => {
     t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
 
+test.serial('[REST] Futures update/edit order', async t => {
+    await binance.futuresUpdateOrder({
+        symbol: 'LTCUSDT',
+        side: 'SELL',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+        orderId: 1234,
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/order'))
+    const obj = urlToObject(interceptedUrl.replace('https://fapi.binance.com/fapi/v1/order?', ''))
+    t.is(obj.symbol, 'LTCUSDT')
+    t.is(obj.side, 'SELL')
+    t.is(obj.type, 'LIMIT')
+    t.is(obj.quantity, '0.5')
+    t.is(obj.orderId, '1234')
+})
+
 test.serial('[REST] Futures cancel order', async t => {
     await binance.futuresCancelOrder({ symbol: 'LTCUSDT', orderId: '34234234' })
     const url = 'https://fapi.binance.com/fapi/v1/order'
@@ -295,6 +320,26 @@ test.serial('[REST] MarketBuy test', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
+})
+
+test.serial('[REST] update spot order', async t => {
+    await binance.updateOrder({
+        symbol: 'LTCUSDT',
+        side: 'BUY',
+        type: 'MARKET',
+        quantity: 0.5,
+        cancelOrderId: 1234,
+    })
+    t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order/cancelReplace'))
+    const body = interceptedUrl.replace('https://api.binance.com/api/v3/order/cancelReplace', '')
+    const obj = urlToObject(body)
+    t.is(obj.symbol, 'LTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'MARKET')
+    t.is(obj.quantity, '0.5')
+    t.is(obj.cancelReplaceMode, 'STOP_ON_FAILURE')
+    t.is(obj.cancelOrderId, '1234')
     t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
 
@@ -375,5 +420,274 @@ test.serial('[REST] delivery MarketBuy', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.1')
+    t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
+})
+
+// Algo order tests
+test.serial('[REST] Futures Create Algo Order', async t => {
+    await binance.futuresCreateAlgoOrder({
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        type: 'STOP_MARKET',
+        quantity: '1',
+        triggerPrice: '50000',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/algoOrder'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/algoOrder?', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'STOP_MARKET')
+    t.is(obj.quantity, '1')
+    t.is(obj.triggerPrice, '50000')
+    t.is(obj.algoType, 'CONDITIONAL')
+    t.true(obj.clientAlgoId.startsWith(CONTRACT_PREFIX))
+})
+
+test.serial('[REST] Futures Cancel Algo Order', async t => {
+    await binance.futuresCancelAlgoOrder({
+        symbol: 'BTCUSDT',
+        algoId: '12345',
+    })
+    const url = 'https://fapi.binance.com/fapi/v1/algoOrder'
+    t.true(interceptedUrl.startsWith(url))
+    const obj = urlToObject(interceptedUrl.replace(url, ''))
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.algoId, '12345')
+})
+
+test.serial('[REST] Futures Get Algo Order', async t => {
+    await binance.futuresGetAlgoOrder({
+        symbol: 'BTCUSDT',
+        algoId: '12345',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/algoOrder'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/algoOrder', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.algoId, '12345')
+})
+
+test.serial('[REST] Futures Get Open Algo Orders', async t => {
+    await binance.futuresGetOpenAlgoOrders({
+        symbol: 'BTCUSDT',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/openAlgoOrders'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/openAlgoOrders', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+})
+
+test.serial('[REST] Futures Get All Algo Orders', async t => {
+    await binance.futuresGetAllAlgoOrders({
+        symbol: 'BTCUSDT',
+        startTime: '1609459200000',
+        endTime: '1609545600000',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/allAlgoOrders'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/allAlgoOrders', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.startTime, '1609459200000')
+    t.is(obj.endTime, '1609545600000')
+})
+
+test.serial('[REST] Futures Cancel All Algo Open Orders', async t => {
+    await binance.futuresCancelAllAlgoOpenOrders({
+        symbol: 'BTCUSDT',
+    })
+    const url = 'https://fapi.binance.com/fapi/v1/algoOpenOrders'
+    t.true(interceptedUrl.startsWith(url))
+    const obj = urlToObject(interceptedUrl.replace(url, ''))
+    t.is(obj.symbol, 'BTCUSDT')
+})
+
+test.serial('[REST] Futures Order Auto-routes STOP_MARKET to Algo', async t => {
+    await binance.futuresOrder({
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        type: 'STOP_MARKET',
+        quantity: '1',
+        stopPrice: '50000',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/algoOrder'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/algoOrder?', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'STOP_MARKET')
+    t.is(obj.quantity, '1')
+    t.is(obj.triggerPrice, '50000')
+    t.is(obj.algoType, 'CONDITIONAL')
+    t.true(obj.clientAlgoId.startsWith(CONTRACT_PREFIX))
+    t.is(obj.newClientOrderId, undefined)
+})
+
+test.serial('[REST] Futures Order Auto-routes TAKE_PROFIT_MARKET to Algo', async t => {
+    await binance.futuresOrder({
+        symbol: 'BTCUSDT',
+        side: 'SELL',
+        type: 'TAKE_PROFIT_MARKET',
+        quantity: '1',
+        stopPrice: '60000',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/algoOrder'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/algoOrder?', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.side, 'SELL')
+    t.is(obj.type, 'TAKE_PROFIT_MARKET')
+    t.is(obj.quantity, '1')
+    t.is(obj.triggerPrice, '60000')
+    t.is(obj.algoType, 'CONDITIONAL')
+})
+
+test.serial('[REST] Futures Order Auto-routes TRAILING_STOP_MARKET to Algo', async t => {
+    await binance.futuresOrder({
+        symbol: 'BTCUSDT',
+        side: 'SELL',
+        type: 'TRAILING_STOP_MARKET',
+        quantity: '1',
+        callbackRate: '1.0',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/algoOrder'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/algoOrder?', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.side, 'SELL')
+    t.is(obj.type, 'TRAILING_STOP_MARKET')
+    t.is(obj.quantity, '1')
+    t.is(obj.callbackRate, '1.0')
+    t.is(obj.algoType, 'CONDITIONAL')
+})
+
+test.serial('[REST] Futures GetOrder with conditional parameter', async t => {
+    await binance.futuresGetOrder({
+        symbol: 'BTCUSDT',
+        algoId: '12345',
+        conditional: true,
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/algoOrder'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/algoOrder', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.algoId, '12345')
+    t.is(obj.conditional, undefined)
+})
+
+test.serial('[REST] Futures CancelOrder with conditional parameter', async t => {
+    await binance.futuresCancelOrder({
+        symbol: 'BTCUSDT',
+        algoId: '12345',
+        conditional: true,
+    })
+    const url = 'https://fapi.binance.com/fapi/v1/algoOrder'
+    t.true(interceptedUrl.startsWith(url))
+    const obj = urlToObject(interceptedUrl.replace(url, ''))
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.algoId, '12345')
+    t.is(obj.conditional, undefined)
+})
+
+test.serial('[REST] Futures OpenOrders with conditional parameter', async t => {
+    await binance.futuresOpenOrders({
+        symbol: 'BTCUSDT',
+        conditional: true,
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/openAlgoOrders'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/openAlgoOrders', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.conditional, undefined)
+})
+
+test.serial('[REST] Futures AllOrders with conditional parameter', async t => {
+    await binance.futuresAllOrders({
+        symbol: 'BTCUSDT',
+        conditional: true,
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/allAlgoOrders'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/allAlgoOrders', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.conditional, undefined)
+})
+
+test.serial('[REST] Futures CancelAllOpenOrders with conditional parameter', async t => {
+    await binance.futuresCancelAllOpenOrders({
+        symbol: 'BTCUSDT',
+        conditional: true,
+    })
+    const url = 'https://fapi.binance.com/fapi/v1/algoOpenOrders'
+    t.true(interceptedUrl.startsWith(url))
+    const obj = urlToObject(interceptedUrl.replace(url, ''))
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.conditional, undefined)
+})
+
+test.serial('[REST] Futures RPI Depth', async t => {
+    try {
+        await binance.futuresRpiDepth({ symbol: 'BTCUSDT', limit: 100 })
+    } catch (e) {
+        // it can throw an error because of the mocked response
+    }
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/rpiDepth?symbol=BTCUSDT&limit=100')
+})
+
+test.serial('[REST] Futures RPI Depth no limit', async t => {
+    try {
+        await binance.futuresRpiDepth({ symbol: 'ETHUSDT' })
+    } catch (e) {
+        // it can throw an error because of the mocked response
+    }
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/rpiDepth?symbol=ETHUSDT')
+})
+
+test.serial('[REST] Futures Symbol ADL Risk', async t => {
+    await binance.futuresSymbolAdlRisk({ symbol: 'BTCUSDT' })
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/symbolAdlRisk?symbol=BTCUSDT')
+})
+
+test.serial('[REST] Futures Symbol ADL Risk all symbols', async t => {
+    await binance.futuresSymbolAdlRisk()
+    t.is(interceptedUrl, 'https://fapi.binance.com/fapi/v1/symbolAdlRisk')
+})
+
+test.serial('[REST] Futures Commission Rate', async t => {
+    await binance.futuresCommissionRate({ symbol: 'BTCUSDT' })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/commissionRate'))
+    const obj = urlToObject(
+        interceptedUrl.replace('https://fapi.binance.com/fapi/v1/commissionRate?', ''),
+    )
+    t.is(obj.symbol, 'BTCUSDT')
+})
+
+test.serial('[REST] Futures RPI Order', async t => {
+    await binance.futuresOrder({
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        type: 'LIMIT',
+        quantity: 0.001,
+        price: 50000,
+        timeInForce: 'RPI',
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/order'))
+    const obj = urlToObject(interceptedUrl.replace('https://fapi.binance.com/fapi/v1/order?', ''))
+    t.is(obj.symbol, 'BTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'LIMIT')
+    t.is(obj.quantity, '0.001')
+    t.is(obj.price, '50000')
+    t.is(obj.timeInForce, 'RPI')
     t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })

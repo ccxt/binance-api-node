@@ -51,7 +51,22 @@ export enum OrderSide {
 export enum TimeInForce {
   GTC = 'GTC', // Good Till Cancel
   IOC = 'IOC', // Immediate or Cancel
-  FOK = 'FOK'  // Fill or Kill
+  FOK = 'FOK', // Fill or Kill
+  RPI = 'RPI'  // Retail Price Improvement
+}
+
+export enum OrderStatus {
+  NEW = 'NEW',
+  PARTIALLY_FILLED = 'PARTIALLY_FILLED',
+  FILLED = 'FILLED',
+  CANCELED = 'CANCELED',
+  PENDING_CANCEL = 'PENDING_CANCEL',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+  ACCEPTED = 'ACCEPTED',
+  TRIGGERING = 'TRIGGERING',
+  TRIGGERED = 'TRIGGERED',
+  FINISHED = 'FINISHED'
 }
 
 export enum TradingType {
