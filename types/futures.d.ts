@@ -399,7 +399,7 @@ export interface FuturesEndpoints extends BinanceRestClient {
     unrealizedPnl: string;
     marginLevel: string;
   }>>;
-  futuresLeverageBracket(payload: { symbol: string }): Promise<Array<{
+  futuresLeverageBracket(payload: { symbol?: string }): Promise<Array<{
     symbol: string;
     brackets: Array<{
       bracket: number;
