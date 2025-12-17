@@ -184,6 +184,46 @@ export interface FuturesEndpoints extends BinanceRestClient {
       commissionAsset: string;
     }>;
   }>;
+  futuresUpdateOrder(payload: {
+    orderId?: number;
+    origClientOrderId?: string;
+    symbol: string;
+    side: OrderSide;
+    type: OrderType;
+    quantity?: string;
+    price?: string;
+    priceMatch?: string;
+  }): Promise<{
+    symbol: string;
+    orderId: number;
+    orderListId: number;
+    clientOrderId: string;
+    transactTime: number;
+    price: string;
+    origQty: string;
+    executedQty: string;
+    cumQuote: string;
+    status: OrderStatus;
+    timeInForce: TimeInForce;
+    type: OrderType;
+    side: OrderSide;
+    marginBuyBorrowAmount: string;
+    marginBuyBorrowAsset: string;
+    stopPrice?: string;
+    workingType?: string;
+    priceProtect?: string;
+    origType?: string;
+    priceMatch?: string;
+    selfTradePreventionMode?: string;
+    goodTillDate?: number;
+    updateTime?: number;
+    fills: Array<{
+      price: string;
+      qty: string;
+      commission: string;
+      commissionAsset: string;
+    }>;
+  }>;
   futuresBatchOrders(payload: { batchOrders: Array<{
     symbol: string;
     side: OrderSide;
