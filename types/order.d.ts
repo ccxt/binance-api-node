@@ -38,6 +38,76 @@ export interface OrderEndpoints extends BinanceRestClient {
       commissionAsset: string;
     }>;
   }>;
+  updateOrder(payload: {
+    symbol: string;
+    side: OrderSide;
+    type: OrderType;
+    quantity?: string;
+    cancelReplaceMode?: string;
+    price?: string;
+    cancelNewClientOrderId?: string;
+    quoteOrderQty?: string;
+    cancelOrigClientOrderId?: string;
+    cancelOrderId?: number;
+    newClientOrderId?: string;
+    timeInForce?: TimeInForce;
+    strategyId?: number;
+    strategyType?: number;
+    stopPrice?: string;
+    trailingDelta?: number;
+    trailingTime?: number;
+    icebergQty?: string;
+    newOrderRespType?: string;
+    selfTradePreventionMode?: string;
+    cancelRestrictions?: string;
+    orderRateLimitExceededMode?: string;
+    pegPriceType?: string;
+    pegOffsetValue?: string;
+    pegOffsetType?: string;
+  }): Promise<{
+    cancelResult: string;
+    newOrderResult: string;
+    cancelResponse: {
+      symbol: string;
+      origClientOrderId: string;
+      orderId: number;
+      orderListId: number;
+      clientOrderId: string;
+      transactTime: number;
+      price: string;
+      origQty: string;
+      executedQty: string;
+      cummulativeQuoteQty: string;
+      status: OrderStatus;
+      timeInForce: TimeInForce;
+      type: OrderType;
+      side: OrderSide;
+    };
+    newOrderResponse: {
+      symbol: string;
+      orderId: number;
+      orderListId: number;
+      clientOrderId: string;
+      transactTime: number;
+      price: string;
+      origQty: string;
+      executedQty: string;
+      origQuoteOrderQty: string;
+      cummulativeQuoteQty: string;
+      status: OrderStatus;
+      timeInForce: TimeInForce;
+      type: OrderType;
+      side: OrderSide;
+      workingTime: number;
+      fills: Array<{
+        price: string;
+        qty: string;
+        commission: string;
+        commissionAsset: string;
+      }>;
+      selfTradePreventionMode: string;
+    };
+  }>;
   orderOco(payload: {
     symbol: string;
     side: OrderSide;
