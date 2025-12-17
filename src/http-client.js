@@ -405,7 +405,6 @@ const orderOco = (privCall, payload = {}, url) => {
 }
 
 const updateOrder = (privCall, payload = {}, url) => {
-
     const newPayload = { ...payload }
 
     if (!newPayload.cancelReplaceMode) {
@@ -421,7 +420,8 @@ const updateOrder = (privCall, payload = {}, url) => {
     }
 
     return (
-        checkParams('updateOrder', newPayload, ['symbol', 'side', 'type']) && privCall(url, newPayload, 'POST')
+        checkParams('updateOrder', newPayload, ['symbol', 'side', 'type']) &&
+        privCall(url, newPayload, 'POST')
     )
 }
 

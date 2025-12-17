@@ -324,7 +324,13 @@ test.serial('[REST] MarketBuy test', async t => {
 })
 
 test.serial('[REST] update spot order', async t => {
-    await binance.updateOrder({ symbol: 'LTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.5, cancelOrderId: 1234 })
+    await binance.updateOrder({
+        symbol: 'LTCUSDT',
+        side: 'BUY',
+        type: 'MARKET',
+        quantity: 0.5,
+        cancelOrderId: 1234,
+    })
     t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order/cancelReplace'))
     const body = interceptedUrl.replace('https://api.binance.com/api/v3/order/cancelReplace', '')
     const obj = urlToObject(body)
