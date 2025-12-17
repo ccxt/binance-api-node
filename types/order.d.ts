@@ -50,6 +50,7 @@ export interface OrderEndpoints extends BinanceRestClient {
     cancelOrigClientOrderId?: string;
     cancelOrderId?: number;
     newClientOrderId?: string;
+    timeInForce?: TimeInForce;
     strategyId?: number;
     strategyType?: number;
     stopPrice?: string;
