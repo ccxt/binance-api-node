@@ -404,6 +404,27 @@ const orderOco = (privCall, payload = {}, url) => {
     )
 }
 
+const updateOrder = (privCall, payload = {}, url) => {
+
+    const newPayload = { ...payload }
+
+    if (!newPayload.cancelReplaceMode) {
+        newPayload.cancelReplaceMode = 'STOP_ON_FAILURE'
+    }
+
+    if (!newPayload.timeInForce) {
+        newPayload.timeInForce = 'GTC'
+    }
+
+    if (!newPayload.newClientOrderId) {
+        newPayload.newClientOrderId = spotP()
+    }
+
+    return (
+        checkParams('updateOrder', newPayload, ['symbol', 'side', 'type']) && privCall(url, newPayload, 'POST')
+    )
+}
+
 /**
  * Zip asks and bids reponse from order book
  */
@@ -486,7 +507,7 @@ export default opts => {
 
         // Order endpoints
         order: payload => order(privCall, payload, '/api/v3/order'),
-        updateOrder: payload => privCall('/api/v3/order/cancelReplace', payload, 'POST'),
+        updateOrder: payload => updateOrder(privCall, payload, '/api/v3/order/cancelReplace'),
         orderOco: payload => orderOco(privCall, payload, '/api/v3/order/oco'),
         orderTest: payload => order(privCall, payload, '/api/v3/order/test'),
         getOrder: payload => privCall('/api/v3/order', payload),
