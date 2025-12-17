@@ -38,6 +38,13 @@ test.serial.beforeEach(t => {
             return { success: true }
         })
     nock(/.*/)
+        .put(/.*/)
+        .reply(200, function (uri, requestBody) {
+            interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
+            interceptedBody = requestBody
+            return { success: true }
+        })
+    nock(/.*/)
         .delete(/.*/)
         .reply(200, function (uri, requestBody) {
             interceptedUrl = `${this.req.options.proto}://${this.req.options.hostname}${uri}`
@@ -277,6 +284,24 @@ test.serial('[REST] Futures LimitSell', async t => {
     t.true(obj.newClientOrderId.startsWith(CONTRACT_PREFIX))
 })
 
+test.serial('[REST] Futures update/edit order', async t => {
+    await binance.futuresUpdateOrder({
+        symbol: 'LTCUSDT',
+        side: 'SELL',
+        type: 'LIMIT',
+        quantity: 0.5,
+        price: 100,
+        orderId: 1234,
+    })
+    t.true(interceptedUrl.startsWith('https://fapi.binance.com/fapi/v1/order'))
+    const obj = urlToObject(interceptedUrl.replace('https://fapi.binance.com/fapi/v1/order?', ''))
+    t.is(obj.symbol, 'LTCUSDT')
+    t.is(obj.side, 'SELL')
+    t.is(obj.type, 'LIMIT')
+    t.is(obj.quantity, '0.5')
+    t.is(obj.orderId, '1234')
+})
+
 test.serial('[REST] Futures cancel order', async t => {
     await binance.futuresCancelOrder({ symbol: 'LTCUSDT', orderId: '34234234' })
     const url = 'https://fapi.binance.com/fapi/v1/order'
@@ -295,6 +320,26 @@ test.serial('[REST] MarketBuy test', async t => {
     t.is(obj.side, 'BUY')
     t.is(obj.type, 'MARKET')
     t.is(obj.quantity, '0.5')
+    t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
+})
+
+test.serial('[REST] update spot order', async t => {
+    await binance.updateOrder({
+        symbol: 'LTCUSDT',
+        side: 'BUY',
+        type: 'MARKET',
+        quantity: 0.5,
+        cancelOrderId: 1234,
+    })
+    t.true(interceptedUrl.startsWith('https://api.binance.com/api/v3/order/cancelReplace'))
+    const body = interceptedUrl.replace('https://api.binance.com/api/v3/order/cancelReplace', '')
+    const obj = urlToObject(body)
+    t.is(obj.symbol, 'LTCUSDT')
+    t.is(obj.side, 'BUY')
+    t.is(obj.type, 'MARKET')
+    t.is(obj.quantity, '0.5')
+    t.is(obj.cancelReplaceMode, 'STOP_ON_FAILURE')
+    t.is(obj.cancelOrderId, '1234')
     t.true(obj.newClientOrderId.startsWith(SPOT_PREFIX))
 })
 

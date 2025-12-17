@@ -155,6 +155,7 @@ Following examples will use the `await` form, which requires some configuration 
       - [delivery markPrice](#delivery-markprice)
     - [Authenticated REST Endpoints](#authenticated-rest-endpoints)
       - [order](#order)
+      - [updateOrder](#updateorder)
       - [orderTest](#ordertest)
       - [orderOco](#orderoco)
       - [getOrder](#getorder)
@@ -207,6 +208,8 @@ Following examples will use the `await` form, which requires some configuration 
     - [Portfolio Margin Endpoints](#portfolio-margin-endpoints)
       - [getPortfolioMarginAccountInfo](#getportfoliomarginaccountinfo)
     - [Futures Authenticated REST endpoints](#futures-authenticated-rest-endpoints)
+      - [futuresOrder](#futuresorder)
+      - [futuresUpdateOrder](#futuresupdateorder)
       - [futuresGetOrder](#futuresgetorder)
       - [futuresAllOrders](#futuresallorders)
       - [futuresBatchOrders](#futuresbatchorders)
@@ -1377,7 +1380,8 @@ the request.
 
 #### order
 
-Creates a new order.
+- Creates a new order.
+- see https://developers.binance.com/docs/binance-spot-api-docs/rest-api/trading-endpoints#new-order-trade
 
 ```js
 console.log(
@@ -1452,6 +1456,26 @@ Additional mandatory parameters based on `type`:
 Test new order creation and signature/recvWindow. Creates and validates a new order but does not send it into the matching engine.
 
 Same API as above, but does not return any output on success.
+
+
+#### updateOrder
+
+- updates an order
+- see https://developers.binance.com/docs/binance-spot-api-docs/rest-api/trading-endpoints#cancel-an-existing-order-and-send-a-new-order-trade
+
+```Js
+
+  const order = await client.updateOrder({
+        symbol: 'LTCUSDT',
+        cancelOrderId: 12345678,
+        side: 'BUY',
+        type: 'LIMIT',
+        quantity: 1,
+        price: 80,
+        timeInForce: 'GTC',
+    })
+
+```
 
 #### orderOco
 
@@ -3616,6 +3640,42 @@ console.log(await client.getPortfolioMarginAccountInfo())
 </details>
 
 ### Futures Authenticated REST endpoints
+
+#### futuresOrder
+
+- Creates a futures order
+- see https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api
+
+```js
+console.log(
+  await client.futuresOrder({
+      symbol: 'LTCUSDT',
+      side: 'BUY',
+      type: 'LIMIT',
+      quantity: 1,
+      price: 80,
+      timeInForce: 'GTC',
+  })
+)
+```
+
+#### futuresUpdateOrder
+- Updates a futures order
+- see https://developers.binance.com/docs/derivatives/usds-margined-futures/trade/rest-api/Modify-Order
+
+```js
+console.log(
+  await client.futuresUpdateOrder({
+      orderId: 23423423423,
+      symbol: 'LTCUSDT',
+      side: 'BUY',
+      type: 'LIMIT',
+      quantity: 1,
+      price: 80,
+      timeInForce: 'GTC',
+  })
+)
+```
 
 #### futuresGetOrder
 
