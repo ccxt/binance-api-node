@@ -12,6 +12,7 @@ import { PortfolioMarginEndpoints } from './types/portfolio-margin';
 import { SavingsEndpoints } from './types/savings';
 import { MiningEndpoints } from './types/mining';
 import { UtilityEndpoints } from './types/utility';
+import { BinanceWebSocket } from './types/websocket';
 
 export interface BinanceRest extends
   GenericEndpoints,
@@ -26,7 +27,9 @@ export interface BinanceRest extends
   PortfolioMarginEndpoints,
   SavingsEndpoints,
   MiningEndpoints,
-  UtilityEndpoints {}
+  UtilityEndpoints {
+  ws: BinanceWebSocket;
+}
 
 export * from './types/base';
 
@@ -142,6 +145,8 @@ export * from './types/utility';
 // export {
 
 // } from './types/utility';
+
+export * from './types/websocket';
 
 
 declare function Binance(options?: BinanceRestClient.BinanceRestOptions): BinanceRest;
