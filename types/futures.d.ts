@@ -1,5 +1,40 @@
 import { BinanceRestClient, OrderSide, OrderStatus, OrderType, TimeInForce } from './base';
 
+export interface FuturesOrderResponse {
+  symbol: string;
+  orderId: number;
+  orderListId: number;
+  clientOrderId: string;
+  transactTime: number;
+  price: string;
+  origQty: string;
+  executedQty: string;
+  cumQuote: string;
+  status: OrderStatus;
+  timeInForce: TimeInForce;
+  type: OrderType;
+  side: OrderSide;
+  marginBuyBorrowAmount: string;
+  marginBuyBorrowAsset: string;
+  fills: Array<{
+    price: string;
+    qty: string;
+    commission: string;
+    commissionAsset: string;
+  }>;
+}
+
+export interface FuturesAlgoOrderResponse {
+  symbol: string;
+  algoId: number;
+  clientAlgoId: string;
+  transactTime: number;
+  algoType: string;
+  side: OrderSide;
+  type: string;
+  status: OrderStatus;
+}
+
 export interface FuturesEndpoints extends BinanceRestClient {
   futuresPing(): Promise<boolean>;
   futuresTime(): Promise<{
@@ -156,34 +191,21 @@ export interface FuturesEndpoints extends BinanceRestClient {
     price?: string;
     newClientOrderId?: string;
     stopPrice?: string;
+    triggerPrice?: string;
     trailingDelta?: number;
     trailingTime?: number;
     icebergQty?: string;
     newOrderRespType?: string;
     timeInForce?: TimeInForce;
-  }): Promise<{
-    symbol: string;
-    orderId: number;
-    orderListId: number;
-    clientOrderId: string;
-    transactTime: number;
-    price: string;
-    origQty: string;
-    executedQty: string;
-    cumQuote: string;
-    status: OrderStatus;
-    timeInForce: TimeInForce;
-    type: OrderType;
-    side: OrderSide;
-    marginBuyBorrowAmount: string;
-    marginBuyBorrowAsset: string;
-    fills: Array<{
-      price: string;
-      qty: string;
-      commission: string;
-      commissionAsset: string;
-    }>;
-  }>;
+    positionSide?: 'BOTH' | 'LONG' | 'SHORT';
+    reduceOnly?: string;
+    closePosition?: boolean;
+    workingType?: 'MARK_PRICE' | 'CONTRACT_PRICE';
+    priceProtect?: string;
+    activationPrice?: string;
+    callbackRate?: string;
+    clientAlgoId?: string;
+  }): Promise<FuturesOrderResponse | FuturesAlgoOrderResponse>;
   futuresUpdateOrder(payload: {
     orderId?: number;
     origClientOrderId?: string;

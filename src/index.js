@@ -118,3 +118,60 @@ export const PayStatus = {
     SUCCESS: 'SUCCESS',
     FAILED: 'FAILED',
 }
+
+export const OrderSide = {
+    BUY: 'BUY',
+    SELL: 'SELL',
+}
+
+export const OrderType = {
+    LIMIT: 'LIMIT',
+    MARKET: 'MARKET',
+    STOP_LOSS: 'STOP_LOSS',
+    STOP_LOSS_LIMIT: 'STOP_LOSS_LIMIT',
+    TAKE_PROFIT: 'TAKE_PROFIT',
+    TAKE_PROFIT_LIMIT: 'TAKE_PROFIT_LIMIT',
+    LIMIT_MAKER: 'LIMIT_MAKER',
+    STOP_MARKET: 'STOP_MARKET',
+    TAKE_PROFIT_MARKET: 'TAKE_PROFIT_MARKET',
+    TRAILING_STOP_MARKET: 'TRAILING_STOP_MARKET',
+}
+
+export const TimeInForce = {
+    GTC: 'GTC',
+    IOC: 'IOC',
+    FOK: 'FOK',
+    RPI: 'RPI',
+}
+
+export const OrderStatus = {
+    NEW: 'NEW',
+    PARTIALLY_FILLED: 'PARTIALLY_FILLED',
+    FILLED: 'FILLED',
+    CANCELED: 'CANCELED',
+    PENDING_CANCEL: 'PENDING_CANCEL',
+    REJECTED: 'REJECTED',
+    EXPIRED: 'EXPIRED',
+    ACCEPTED: 'ACCEPTED',
+    TRIGGERING: 'TRIGGERING',
+    TRIGGERED: 'TRIGGERED',
+    FINISHED: 'FINISHED',
+}
+
+export const RateLimitType = {
+    REQUEST_WEIGHT: 'REQUEST_WEIGHT',
+    ORDERS: 'ORDERS',
+    RAW_REQUESTS: 'RAW_REQUESTS',
+}
+
+export const RateLimitInterval = {
+    SECOND: 'SECOND',
+    MINUTE: 'MINUTE',
+    HOUR: 'HOUR',
+    DAY: 'DAY',
+}
+
+export const TradingType = {
+    SPOT: 'SPOT',
+    MARGIN: 'MARGIN',
+}
