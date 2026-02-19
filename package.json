@@ -3,6 +3,7 @@
   "version": "0.13.6",
   "description": "A node API wrapper for Binance",
   "main": "dist",
+  "types": "index.d.ts",
   "browser": {
     "crypto": false,
     "./dist/http-client.js": "./dist/http-client.js"
