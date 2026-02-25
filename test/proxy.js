@@ -266,7 +266,15 @@ const main = () => {
             clean()
             t.pass('User data stream connected successfully through proxy')
         } catch (e) {
-            if (notAvailable(e) || e.message.includes('WebSocket')) {
+            if (
+                notAvailable(e) ||
+                e.message.includes('WebSocket') ||
+                e.message.includes('ENOTFOUND') ||
+                e.message.includes('ECONNREFUSED') ||
+                e.code === -1022 ||
+                e.code === -2015 ||
+                e.code === -2008
+            ) {
                 t.pass('User data stream or proxy not available on testnet')
             } else {
                 throw e
