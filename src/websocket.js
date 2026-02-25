@@ -3,6 +3,7 @@ import JSONbig from 'json-bigint'
 
 import httpMethods from 'http-client'
 import _openWebSocket from 'open-websocket'
+import { createHmacSignature, createAsymmetricSignature } from 'signature'
 
 const endpoints = {
     base: 'wss://stream.binance.com:9443/ws',
@@ -880,6 +881,290 @@ const getStreamMethods = (opts, variator = '') => {
 
 export const keepStreamAlive = (method, listenKey) => method({ listenKey })
 
+const userWebSocketApi = opts => (cb, transform) => {
+    const isDemo = opts.testnet && !(opts.httpBase && opts.httpBase.includes('testnet'))
+    const isTestnet = !isDemo && opts.httpBase && opts.httpBase.includes('testnet')
+    const wsApiUrl =
+        opts.wsApi ||
+        (isDemo
+            ? 'wss://demo-ws-api.binance.com/ws-api/v3'
+            : isTestnet
+              ? opts.wsApiTestnet || 'wss://ws-api.testnet.binance.vision/ws-api/v3'
+              : 'wss://ws-api.binance.com:443/ws-api/v3')
+
+    let requestId = 1
+    const errorHandler = userErrorHandler(cb, transform)
+    const w = openWebSocket(wsApiUrl)
+
+    const sendSubscribe = () => {
+        const timestamp = opts.getTime ? opts.getTime() : Date.now()
+        const paramsStr = `apiKey=${opts.apiKey}&timestamp=${timestamp}`
+
+        const doSend = signature => {
+            w.send(
+                JSONbig.stringify({
+                    id: requestId++,
+                    method: 'userDataStream.subscribe.signature',
+                    params: {
+                        apiKey: opts.apiKey,
+                        timestamp,
+                        signature,
+                    },
+                }),
+            )
+        }
+
+        if (opts.apiSecret) {
+            createHmacSignature(paramsStr, opts.apiSecret).then(doSend)
+        } else if (opts.privateKey) {
+            doSend(createAsymmetricSignature(paramsStr, opts.privateKey))
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        let resolved = false
+
+        w.onopen = () => {
+            sendSubscribe()
+            if (opts.emitSocketOpens) {
+                userOpenHandler(cb, transform)()
+            }
+        }
+
+        w.onmessage = msg => {
+            const data = JSONbig.parse(msg.data)
+
+            // Control response (subscription/unsubscription)
+            if ('id' in data) {
+                if (data.error) {
+                    const err = new Error(data.error.msg || 'WebSocket API error')
+                    err.code = data.error.code
+                    if (!resolved) {
+                        resolved = true
+                        reject(err)
+                    } else if (opts.emitStreamErrors) {
+                        errorHandler(err)
+                    }
+                } else if (!resolved) {
+                    resolved = true
+                    resolve(options => {
+                        try {
+                            w.send(
+                                JSONbig.stringify({
+                                    id: requestId++,
+                                    method: 'userDataStream.unsubscribe',
+                                }),
+                            )
+                        } catch (e) {
+                            // Ignore send errors during close
+                        }
+                        w.close(1000, 'Close handle was called', {
+                            keepClosed: true,
+                            ...options,
+                        })
+                    })
+                }
+                return
+            }
+
+            // User data event - unwrap if in wrapped format
+            if (cb) {
+                let eventData = data
+                if (data.event && typeof data.event === 'object') {
+                    eventData = data.event
+                }
+
+                if (eventData.e) {
+                    userEventHandler(cb, transform)({ data: JSONbig.stringify(eventData) })
+                }
+            }
+        }
+
+        w.onerror = event => {
+            const error = event.error || event.message || new Error('WebSocket error')
+            if (opts.emitSocketErrors) {
+                errorHandler(typeof error === 'string' ? new Error(error) : error)
+            }
+        }
+    })
+}
+
+const marginUserWebSocketApi =
+    opts =>
+    (cb, transform, marginOpts = {}) => {
+        const isTestnet = opts.testnet || (opts.httpBase && opts.httpBase.includes('testnet'))
+        const wsApiUrl = isTestnet
+            ? opts.wsApiTestnet || 'wss://ws-api.testnet.binance.vision/ws-api/v3'
+            : opts.wsApi || 'wss://ws-api.binance.com:443/ws-api/v3'
+
+        const methods = httpMethods(opts)
+        let requestId = 1
+        let renewalTimeout = null
+        let w = null
+        let keepClosed = false
+        const errorHandler = userErrorHandler(cb, transform)
+        const RENEWAL_BUFFER_MS = 5 * 60 * 1000
+
+        const cleanup = (options = {}, internal = false) => {
+            if (!internal) keepClosed = true
+            if (renewalTimeout) {
+                clearTimeout(renewalTimeout)
+                renewalTimeout = null
+            }
+            if (w) {
+                try {
+                    w.send(
+                        JSONbig.stringify({
+                            id: requestId++,
+                            method: 'userDataStream.unsubscribe',
+                        }),
+                    )
+                } catch (e) {
+                    // Ignore send errors during close
+                }
+                w.close(1000, 'Close handle was called', {
+                    keepClosed: !internal,
+                    ...options,
+                })
+                w = null
+            }
+        }
+
+        const scheduleRenewal = expirationTime => {
+            if (renewalTimeout) clearTimeout(renewalTimeout)
+            const delay = Math.max(expirationTime - Date.now() - RENEWAL_BUFFER_MS, 60000)
+            renewalTimeout = setTimeout(() => renewToken(), delay)
+        }
+
+        const renewToken = () => {
+            if (keepClosed || !w) return
+            methods
+                .marginGetListenToken(marginOpts)
+                .then(({ token, expirationTime }) => {
+                    if (keepClosed || !w) return
+                    w.send(
+                        JSONbig.stringify({
+                            id: requestId++,
+                            method: 'userDataStream.subscribe.listenToken',
+                            params: { listenToken: token },
+                        }),
+                    )
+                    scheduleRenewal(expirationTime)
+                })
+                .catch(err => {
+                    if (opts.emitStreamErrors) errorHandler(err)
+                    if (!keepClosed) {
+                        renewalTimeout = setTimeout(() => renewToken(), 30e3)
+                    }
+                })
+        }
+
+        const makeStream = isReconnecting => {
+            if (keepClosed) return Promise.resolve()
+
+            return methods
+                .marginGetListenToken(marginOpts)
+                .then(({ token, expirationTime }) => {
+                    if (keepClosed) return
+
+                    w = openWebSocket(wsApiUrl)
+
+                    return new Promise((resolve, reject) => {
+                        let resolved = false
+
+                        w.onopen = () => {
+                            w.send(
+                                JSONbig.stringify({
+                                    id: requestId++,
+                                    method: 'userDataStream.subscribe.listenToken',
+                                    params: { listenToken: token },
+                                }),
+                            )
+                            if (opts.emitSocketOpens) {
+                                userOpenHandler(cb, transform)()
+                            }
+                        }
+
+                        w.onmessage = msg => {
+                            const data = JSONbig.parse(msg.data)
+
+                            // Control response (subscription/unsubscription)
+                            if ('id' in data) {
+                                if (data.error) {
+                                    const err = new Error(data.error.msg || 'WebSocket API error')
+                                    err.code = data.error.code
+                                    if (!resolved) {
+                                        resolved = true
+                                        reject(err)
+                                    } else if (opts.emitStreamErrors) {
+                                        errorHandler(err)
+                                    }
+                                } else if (!resolved) {
+                                    resolved = true
+                                    scheduleRenewal(expirationTime)
+                                    resolve(options => cleanup(options))
+                                }
+                                return
+                            }
+
+                            // User data event - unwrap if in wrapped format
+                            let eventData = data
+                            if (data.event && typeof data.event === 'object') {
+                                eventData = data.event
+                            }
+
+                            // Handle eventStreamTerminated - token expired
+                            if (eventData.e === 'eventStreamTerminated') {
+                                cleanup({}, true)
+                                if (!keepClosed) {
+                                    setTimeout(() => makeStream(true), 5e3)
+                                }
+                                return
+                            }
+
+                            if (eventData.e && cb) {
+                                userEventHandler(
+                                    cb,
+                                    transform,
+                                )({
+                                    data: JSONbig.stringify(eventData),
+                                })
+                            }
+                        }
+
+                        w.onerror = event => {
+                            const error =
+                                event.error || event.message || new Error('WebSocket error')
+                            if (opts.emitSocketErrors) {
+                                errorHandler(typeof error === 'string' ? new Error(error) : error)
+                            }
+                        }
+
+                        w.onclose = () => {
+                            if (!keepClosed && resolved) {
+                                if (renewalTimeout) clearTimeout(renewalTimeout)
+                                renewalTimeout = null
+                                w = null
+                                setTimeout(() => makeStream(true), 30e3)
+                            }
+                        }
+                    })
+                })
+                .catch(err => {
+                    if (isReconnecting) {
+                        if (!keepClosed) {
+                            setTimeout(() => makeStream(true), 30e3)
+                        }
+                        if (opts.emitStreamErrors) errorHandler(err)
+                    } else {
+                        throw err
+                    }
+                })
+        }
+
+        return makeStream(false)
+    }
+
 const user = (opts, variator) => (cb, transform) => {
     const [getDataStream, keepDataStream, closeDataStream] = getStreamMethods(opts, variator)
 
@@ -1029,9 +1314,15 @@ export default opts => {
         miniTicker,
         allMiniTickers,
         customSubStream,
-        user: user(opts),
+        user: userWebSocketApi(opts),
 
-        marginUser: user(opts, 'margin'),
+        marginUser: marginUserWebSocketApi(opts),
+        isolatedMarginUser: (payload, cb, transform) =>
+            marginUserWebSocketApi(opts)(cb, transform, {
+                isIsolated: true,
+                symbol: payload.symbol,
+                validity: payload.validity,
+            }),
 
         futuresDepth: (payload, cb, transform) => depth(payload, cb, transform, 'futures'),
         deliveryDepth: (payload, cb, transform) => depth(payload, cb, transform, 'delivery'),

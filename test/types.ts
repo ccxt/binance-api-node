@@ -50,9 +50,7 @@ type HttpClientMethods = {
     getDataStream: () => Promise<any>
     keepDataStream: (payload: any) => Promise<any>
     closeDataStream: (payload: any) => Promise<any>
-    marginGetDataStream: () => Promise<any>
-    marginKeepDataStream: (payload: any) => Promise<any>
-    marginCloseDataStream: (payload: any) => Promise<any>
+    marginGetListenToken: (payload?: any) => Promise<any>
     futuresGetDataStream: () => Promise<any>
     futuresKeepDataStream: (payload: any) => Promise<any>
     futuresCloseDataStream: (payload: any) => Promise<any>
@@ -330,9 +328,11 @@ test('types should compile correctly', async t => {
     const getDataStream = client.getDataStream()
     const keepDataStream = client.keepDataStream({ listenKey: 'key' })
     const closeDataStream = client.closeDataStream({ listenKey: 'key' })
-    const marginGetDataStream = client.marginGetDataStream()
-    const marginKeepDataStream = client.marginKeepDataStream({ listenKey: 'key' })
-    const marginCloseDataStream = client.marginCloseDataStream({ listenKey: 'key' })
+    const marginGetListenToken = client.marginGetListenToken()
+    const marginGetListenTokenIsolated = client.marginGetListenToken({
+        isIsolated: true,
+        symbol: 'BTCUSDT',
+    })
     const futuresGetDataStream = client.futuresGetDataStream()
     const futuresKeepDataStream = client.futuresKeepDataStream({ listenKey: 'key' })
     const futuresCloseDataStream = client.futuresCloseDataStream({ listenKey: 'key' })

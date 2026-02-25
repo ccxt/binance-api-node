@@ -333,6 +333,75 @@ test('[WS] userEvents - outboundAccountPosition', t => {
     })({ data: JSON.stringify(positionPayload) })
 })
 
+// Test that wrapped WebSocket API event format is properly unwrapped
+// The WS API wraps events as { subscriptionId: 0, event: { e: "executionReport", ... } }
+test('[WS] userEvents - unwraps WebSocket API wrapped event format', t => {
+    const wrappedPayload = {
+        subscriptionId: 0,
+        event: {
+            e: 'executionReport',
+            E: 1499405658658,
+            s: 'ETHBTC',
+            c: 'mUvoqJxFIILMdfAW5iGSOW',
+            S: 'BUY',
+            o: 'LIMIT',
+            f: 'GTC',
+            q: '1.00000000',
+            p: '0.10264410',
+            P: '0.00000000',
+            F: '0.00000000',
+            g: -1,
+            C: 'null',
+            x: 'NEW',
+            X: 'NEW',
+            r: 'NONE',
+            i: 4293153,
+            l: '0.00000000',
+            z: '0.00000000',
+            L: '0.00000000',
+            n: '0',
+            N: null,
+            T: 1499405658657,
+            t: -1,
+            I: 8641984,
+            w: true,
+            m: false,
+            M: false,
+            O: 1499405658657,
+            Q: 0,
+            Y: 0,
+            Z: '0.00000000',
+        },
+    }
+
+    // The event field should be unwrapped and processed normally
+    const innerEvent = wrappedPayload.event
+    userEventHandler(res => {
+        t.is(res.eventType, 'executionReport')
+        t.is(res.symbol, 'ETHBTC')
+        t.is(res.side, 'BUY')
+        t.is(res.orderStatus, 'NEW')
+        t.is(res.orderId, 4293153)
+    })({ data: JSON.stringify(innerEvent) })
+})
+
+// Test that direct (non-wrapped) events still work
+test('[WS] userEvents - handles direct event format', t => {
+    const directPayload = {
+        e: 'balanceUpdate',
+        E: 1573200697110,
+        a: 'BTC',
+        d: '100.00000000',
+        T: 1573200697068,
+    }
+
+    userEventHandler(res => {
+        t.is(res.eventType, 'balanceUpdate')
+        t.is(res.asset, 'BTC')
+        t.is(res.balanceDelta, '100.00000000')
+    })({ data: JSON.stringify(directPayload) })
+})
+
 // Real connection test with testnet
 test('[WS] userEvents - real connection with market order', async t => {
     // Create client with testnet endpoints and proxy

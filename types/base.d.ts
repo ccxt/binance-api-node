@@ -1,6 +1,7 @@
 export interface BinanceRestOptions {
   apiKey?: string;
   apiSecret?: string;
+  privateKey?: string;
 
   httpBase?: string;
   httpFutures?: string;
@@ -10,6 +11,8 @@ export interface BinanceRestOptions {
   wsBase?: string;
   wsFutures?: string;
   wsDelivery?: string;
+  wsApi?: string;
+  wsApiTestnet?: string;
 
   timeout?: number;
   testnet?: boolean;

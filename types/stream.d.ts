@@ -14,18 +14,13 @@ export interface StreamEndpoints extends BinanceRestClient {
     code: number;
     msg: string;
   }>;
-  marginGetDataStream(): Promise<{
-    listenKey: string;
-  }>;
-  marginKeepDataStream(payload: { listenKey: string }): Promise<{
-    listenKey: string;
-    code: number;
-    msg: string;
-  }>;
-  marginCloseDataStream(payload: { listenKey: string }): Promise<{
-    listenKey: string;
-    code: number;
-    msg: string;
+  marginGetListenToken(payload?: {
+    isIsolated?: boolean;
+    symbol?: string;
+    validity?: number;
+  }): Promise<{
+    token: string;
+    expirationTime: number;
   }>;
   futuresGetDataStream(): Promise<{
     listenKey: string;

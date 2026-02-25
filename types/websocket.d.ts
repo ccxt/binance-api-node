@@ -314,6 +314,7 @@ export interface BinanceWebSocket {
   customSubStream(payload: string | string[], cb: (data: any) => void): CleanupFn;
   user(cb: (data: any) => void, transform?: boolean): Promise<CleanupFn>;
   marginUser(cb: (data: any) => void, transform?: boolean): Promise<CleanupFn>;
+  isolatedMarginUser(payload: { symbol: string; validity?: number }, cb: (data: any) => void, transform?: boolean): Promise<CleanupFn>;
 
   // Futures
   futuresDepth(payload: string | string[], cb: (data: FuturesDepthEvent) => void, transform?: boolean): CleanupFn;

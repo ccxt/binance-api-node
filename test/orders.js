@@ -114,12 +114,16 @@ const main = () => {
     })
 
     test('[ORDERS] orderTest - STOP_LOSS order', async t => {
+        const currentPrice = await getCurrentPrice()
+        // Stop 5% below market
+        const stopPrice = Math.floor(currentPrice * 0.95)
+
         const result = await client.orderTest({
             symbol: 'BTCUSDT',
             side: 'SELL',
             type: 'STOP_LOSS',
             quantity: 0.001,
-            stopPrice: 25000,
+            stopPrice,
             recvWindow: 60000,
         })
 
