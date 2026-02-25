@@ -329,7 +329,10 @@ test('types should compile correctly', async t => {
     const keepDataStream = client.keepDataStream({ listenKey: 'key' })
     const closeDataStream = client.closeDataStream({ listenKey: 'key' })
     const marginGetListenToken = client.marginGetListenToken()
-    const marginGetListenTokenIsolated = client.marginGetListenToken({ isIsolated: true, symbol: 'BTCUSDT' })
+    const marginGetListenTokenIsolated = client.marginGetListenToken({
+        isIsolated: true,
+        symbol: 'BTCUSDT',
+    })
     const futuresGetDataStream = client.futuresGetDataStream()
     const futuresKeepDataStream = client.futuresKeepDataStream({ listenKey: 'key' })
     const futuresCloseDataStream = client.futuresCloseDataStream({ listenKey: 'key' })

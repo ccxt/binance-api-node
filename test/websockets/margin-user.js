@@ -117,7 +117,7 @@ const main = () => {
             let wsCleanup = null
             let orderId = null
 
-            const finish = async (error) => {
+            const finish = async error => {
                 clearTimeout(timeout)
                 // Cancel order if placed
                 if (orderId) {
@@ -132,7 +132,11 @@ const main = () => {
                     }
                 }
                 if (wsCleanup) {
-                    try { wsCleanup() } catch (e) { /* ignore */ }
+                    try {
+                        wsCleanup()
+                    } catch (e) {
+                        /* ignore */
+                    }
                 }
                 if (error) reject(error)
                 else resolve()
@@ -200,7 +204,11 @@ const main = () => {
                     console.log('Margin not available on testnet:', error.message || error.code)
                     clearTimeout(timeout)
                     if (wsCleanup) {
-                        try { wsCleanup() } catch (e) { /* ignore */ }
+                        try {
+                            wsCleanup()
+                        } catch (e) {
+                            /* ignore */
+                        }
                     }
                     t.pass('Margin not available on testnet')
                     resolve()
