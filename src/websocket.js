@@ -968,13 +968,15 @@ const userWebSocketApi = opts => (cb, transform) => {
             }
 
             // User data event - unwrap if in wrapped format
-            let eventData = data
-            if (data.event && typeof data.event === 'object') {
-                eventData = data.event
-            }
+            if (cb) {
+                let eventData = data
+                if (data.event && typeof data.event === 'object') {
+                    eventData = data.event
+                }
 
-            if (eventData.e) {
-                userEventHandler(cb, transform)({ data: JSONbig.stringify(eventData) })
+                if (eventData.e) {
+                    userEventHandler(cb, transform)({ data: JSONbig.stringify(eventData) })
+                }
             }
         }
 
@@ -1120,7 +1122,7 @@ const marginUserWebSocketApi =
                                 return
                             }
 
-                            if (eventData.e) {
+                            if (eventData.e && cb) {
                                 userEventHandler(
                                     cb,
                                     transform,
