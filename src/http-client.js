@@ -543,11 +543,7 @@ export default opts => {
         keepDataStream: payload => privCall('/api/v3/userDataStream', payload, 'PUT', false, true),
         closeDataStream: payload =>
             privCall('/api/v3/userDataStream', payload, 'DELETE', false, true),
-        marginGetDataStream: () => privCall('/sapi/v1/userDataStream', null, 'POST', true),
-        marginKeepDataStream: payload =>
-            privCall('/sapi/v1/userDataStream', payload, 'PUT', false, true),
-        marginCloseDataStream: payload =>
-            privCall('/sapi/v1/userDataStream', payload, 'DELETE', false, true),
+        marginGetListenToken: payload => privCall('/sapi/v1/userListenToken', payload, 'POST'),
         futuresGetDataStream: () => privCall('/fapi/v1/listenKey', null, 'POST', true),
         futuresKeepDataStream: payload =>
             privCall('/fapi/v1/listenKey', payload, 'PUT', false, true),
