@@ -633,9 +633,7 @@ const futuresAllLiquidations = (cb, transform = true) => {
 
 const futuresBookTicker = (payload, cb, transform = true) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
-        const w = openWebSocket(
-            `${endpoints.futuresPublic}/${symbol.toLowerCase()}@bookTicker`,
-        )
+        const w = openWebSocket(`${endpoints.futuresPublic}/${symbol.toLowerCase()}@bookTicker`)
 
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
@@ -677,9 +675,10 @@ const futuresMarkPrice = (payload, cb, transform = true) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(input => {
         const symbol = typeof input === 'object' ? input.symbol : input
         const updateSpeed = typeof input === 'object' ? input.updateSpeed : undefined
-        const stream = updateSpeed === '1s'
-            ? `${symbol.toLowerCase()}@markPrice@1s`
-            : `${symbol.toLowerCase()}@markPrice`
+        const stream =
+            updateSpeed === '1s'
+                ? `${symbol.toLowerCase()}@markPrice@1s`
+                : `${symbol.toLowerCase()}@markPrice`
 
         const w = openWebSocket(`${endpoints.futuresMarket}/${stream}`)
 
@@ -731,9 +730,7 @@ const futuresContinuousCandles = (payload, interval, cb, transform = true) => {
 
 const futuresCompositeIndex = (payload, cb, transform = true) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
-        const w = openWebSocket(
-            `${endpoints.futuresMarket}/${symbol.toLowerCase()}@compositeIndex`,
-        )
+        const w = openWebSocket(`${endpoints.futuresMarket}/${symbol.toLowerCase()}@compositeIndex`)
 
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
@@ -819,9 +816,7 @@ const futuresAssetIndexTransform = m => ({
 
 const futuresAssetIndex = (payload, cb, transform = true) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
-        const w = openWebSocket(
-            `${endpoints.futuresMarket}/${symbol.toLowerCase()}@assetIndex`,
-        )
+        const w = openWebSocket(`${endpoints.futuresMarket}/${symbol.toLowerCase()}@assetIndex`)
 
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
