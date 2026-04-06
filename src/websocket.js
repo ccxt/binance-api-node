@@ -7,7 +7,10 @@ import { createHmacSignature, createAsymmetricSignature } from 'signature'
 
 const endpoints = {
     base: 'wss://stream.binance.com:9443/ws',
-    futures: 'wss://fstream.binance.com/ws',
+    futures: 'wss://fstream.binance.com/market/ws',
+    futuresPublic: 'wss://fstream.binance.com/public/ws',
+    futuresMarket: 'wss://fstream.binance.com/market/ws',
+    futuresPrivate: 'wss://fstream.binance.com/private/ws',
     delivery: 'wss://dstream.binance.com/ws',
 }
 
@@ -56,9 +59,13 @@ const depth = (payload, cb, transform = true, variator) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
         const [symbolName, updateSpeed] = symbol.toLowerCase().split('@')
         const w = openWebSocket(
-            `${variator ? endpoints[variator] : endpoints.base}/${symbolName}@depth${
-                updateSpeed ? `@${updateSpeed}` : ''
-            }`,
+            `${
+                variator === 'futures'
+                    ? endpoints.futuresPublic
+                    : variator
+                      ? endpoints[variator]
+                      : endpoints.base
+            }/${symbolName}@depth${updateSpeed ? `@${updateSpeed}` : ''}`,
         )
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
@@ -86,7 +93,7 @@ const depth = (payload, cb, transform = true, variator) => {
 const futuresRpiDepth = (payload, cb, transform = true) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
         const symbolName = symbol.toLowerCase()
-        const w = openWebSocket(`${endpoints.futures}/${symbolName}@rpiDepth@500ms`)
+        const w = openWebSocket(`${endpoints.futuresPublic}/${symbolName}@rpiDepth@500ms`)
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
             cb(transform ? futuresDepthTransform(obj) : obj)
@@ -140,9 +147,13 @@ const partialDepth = (payload, cb, transform = true, variator) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(({ symbol, level }) => {
         const [symbolName, updateSpeed] = symbol.toLowerCase().split('@')
         const w = openWebSocket(
-            `${variator ? endpoints[variator] : endpoints.base}/${symbolName}@depth${level}${
-                updateSpeed ? `@${updateSpeed}` : ''
-            }`,
+            `${
+                variator === 'futures'
+                    ? endpoints.futuresPublic
+                    : variator
+                      ? endpoints[variator]
+                      : endpoints.base
+            }/${symbolName}@depth${level}${updateSpeed ? `@${updateSpeed}` : ''}`,
         )
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
@@ -593,7 +604,7 @@ const futuresLiqsTransform = m => ({
 
 const futuresLiquidations = (payload, cb, transform = true) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
-        const w = openWebSocket(`${endpoints.futures}/${symbol.toLowerCase()}@forceOrder`)
+        const w = openWebSocket(`${endpoints.futuresMarket}/${symbol.toLowerCase()}@forceOrder`)
         w.onmessage = msg => {
             const obj = JSONbig.parse(msg.data)
 
@@ -610,7 +621,7 @@ const futuresLiquidations = (payload, cb, transform = true) => {
 }
 
 const futuresAllLiquidations = (cb, transform = true) => {
-    const w = new openWebSocket(`${endpoints.futures}/!forceOrder@arr`)
+    const w = new openWebSocket(`${endpoints.futuresMarket}/!forceOrder@arr`)
 
     w.onmessage = msg => {
         const obj = JSONbig.parse(msg.data)
@@ -1225,7 +1236,7 @@ const user = (opts, variator) => (cb, transform) => {
                     w = openWebSocket(
                         `${
                             variator === 'futures'
-                                ? endpoints.futures
+                                ? endpoints.futuresPrivate
                                 : variator === 'delivery'
                                   ? endpoints.delivery
                                   : endpoints.base
@@ -1282,7 +1293,7 @@ const futuresAllMarkPricesTransform = m =>
 const futuresAllMarkPrices = (payload, cb, transform = true) => {
     const variant = payload.updateSpeed === '1s' ? '!markPrice@arr@1s' : '!markPrice@arr'
 
-    const w = openWebSocket(`${endpoints.futures}/${variant}`)
+    const w = openWebSocket(`${endpoints.futuresMarket}/${variant}`)
 
     w.onmessage = msg => {
         const arr = JSONbig.parse(msg.data)
@@ -1294,7 +1305,15 @@ const futuresAllMarkPrices = (payload, cb, transform = true) => {
 
 export default opts => {
     if (opts && opts.wsBase) endpoints.base = opts.wsBase
-    if (opts && opts.wsFutures) endpoints.futures = opts.wsFutures
+    if (opts && opts.wsFutures) {
+        endpoints.futures = opts.wsFutures
+        endpoints.futuresPublic = opts.wsFutures
+        endpoints.futuresMarket = opts.wsFutures
+        endpoints.futuresPrivate = opts.wsFutures
+    }
+    if (opts && opts.wsFuturesPublic) endpoints.futuresPublic = opts.wsFuturesPublic
+    if (opts && opts.wsFuturesMarket) endpoints.futuresMarket = opts.wsFuturesMarket
+    if (opts && opts.wsFuturesPrivate) endpoints.futuresPrivate = opts.wsFuturesPrivate
     if (opts && opts.wsDelivery) endpoints.delivery = opts.wsDelivery
 
     if (opts && opts.proxy) {
