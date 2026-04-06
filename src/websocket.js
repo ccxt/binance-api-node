@@ -631,6 +631,223 @@ const futuresAllLiquidations = (cb, transform = true) => {
     return options => w.close(1000, 'Close handle was called', { keepClosed: true, ...options })
 }
 
+const futuresBookTicker = (payload, cb, transform = true) => {
+    const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
+        const w = openWebSocket(
+            `${endpoints.futuresPublic}/${symbol.toLowerCase()}@bookTicker`,
+        )
+
+        w.onmessage = msg => {
+            const obj = JSONbig.parse(msg.data)
+            cb(transform ? bookTickerTransform(obj) : obj)
+        }
+
+        return w
+    })
+
+    return options =>
+        cache.forEach(w =>
+            w.close(1000, 'Close handle was called', { keepClosed: true, ...options }),
+        )
+}
+
+const futuresAllBookTickers = (cb, transform = true) => {
+    const w = openWebSocket(`${endpoints.futuresPublic}/!bookTicker`)
+
+    w.onmessage = msg => {
+        const obj = JSONbig.parse(msg.data)
+        cb(transform ? bookTickerTransform(obj) : obj)
+    }
+
+    return options => w.close(1000, 'Close handle was called', { keepClosed: true, ...options })
+}
+
+const futuresMarkPriceTransform = m => ({
+    eventType: m.e,
+    eventTime: m.E,
+    symbol: m.s,
+    markPrice: m.p,
+    indexPrice: m.i,
+    settlePrice: m.P,
+    fundingRate: m.r,
+    nextFundingRate: m.T,
+})
+
+const futuresMarkPrice = (payload, cb, transform = true) => {
+    const cache = (Array.isArray(payload) ? payload : [payload]).map(input => {
+        const symbol = typeof input === 'object' ? input.symbol : input
+        const updateSpeed = typeof input === 'object' ? input.updateSpeed : undefined
+        const stream = updateSpeed === '1s'
+            ? `${symbol.toLowerCase()}@markPrice@1s`
+            : `${symbol.toLowerCase()}@markPrice`
+
+        const w = openWebSocket(`${endpoints.futuresMarket}/${stream}`)
+
+        w.onmessage = msg => {
+            const obj = JSONbig.parse(msg.data)
+            cb(transform ? futuresMarkPriceTransform(obj) : obj)
+        }
+
+        return w
+    })
+
+    return options =>
+        cache.forEach(w =>
+            w.close(1000, 'Close handle was called', { keepClosed: true, ...options }),
+        )
+}
+
+const futuresContinuousCandles = (payload, interval, cb, transform = true) => {
+    if (!interval || !cb) {
+        throw new Error('Please pass a pair, contractType, interval and callback.')
+    }
+
+    const pair = payload.pair.toLowerCase()
+    const contractType = payload.contractType.toLowerCase()
+
+    const w = openWebSocket(
+        `${endpoints.futuresMarket}/${pair}_${contractType}@continuousKline_${interval}`,
+    )
+
+    w.onmessage = msg => {
+        const obj = JSONbig.parse(msg.data)
+        const { e: eventType, E: eventTime, ps: pairSymbol, ct: contType, k: tick } = obj
+
+        cb(
+            transform
+                ? {
+                      eventType,
+                      eventTime,
+                      pair: pairSymbol,
+                      contractType: contType,
+                      ...candleTransform(tick),
+                  }
+                : obj,
+        )
+    }
+
+    return options => w.close(1000, 'Close handle was called', { keepClosed: true, ...options })
+}
+
+const futuresCompositeIndex = (payload, cb, transform = true) => {
+    const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
+        const w = openWebSocket(
+            `${endpoints.futuresMarket}/${symbol.toLowerCase()}@compositeIndex`,
+        )
+
+        w.onmessage = msg => {
+            const obj = JSONbig.parse(msg.data)
+            cb(
+                transform
+                    ? {
+                          eventType: obj.e,
+                          eventTime: obj.E,
+                          symbol: obj.s,
+                          price: obj.p,
+                          composition: obj.c
+                              ? obj.c.map(c => ({
+                                    baseAsset: c.b,
+                                    quoteAsset: c.q,
+                                    weightInQuantity: c.w,
+                                    weightInPercentage: c.W,
+                                    indexPrice: c.i,
+                                }))
+                              : [],
+                      }
+                    : obj,
+            )
+        }
+
+        return w
+    })
+
+    return options =>
+        cache.forEach(w =>
+            w.close(1000, 'Close handle was called', { keepClosed: true, ...options }),
+        )
+}
+
+const futuresContractInfo = (cb, transform = true) => {
+    const w = openWebSocket(`${endpoints.futuresMarket}/!contractInfo`)
+
+    w.onmessage = msg => {
+        const obj = JSONbig.parse(msg.data)
+        cb(
+            transform
+                ? {
+                      eventType: obj.e,
+                      eventTime: obj.E,
+                      symbol: obj.s,
+                      pair: obj.ps,
+                      contractType: obj.ct,
+                      deliveryDate: obj.dt,
+                      onboardDate: obj.ot,
+                      contractStatus: obj.cs,
+                      brackets: obj.bks
+                          ? obj.bks.map(b => ({
+                                notionalBracket: b.bs,
+                                floorNotional: b.bnf,
+                                capNotional: b.bnc,
+                                maintenanceRatio: b.mmr,
+                                auxiliaryNumber: b.cf,
+                                minLeverage: b.mi,
+                                maxLeverage: b.ma,
+                            }))
+                          : [],
+                  }
+                : obj,
+        )
+    }
+
+    return options => w.close(1000, 'Close handle was called', { keepClosed: true, ...options })
+}
+
+const futuresAssetIndexTransform = m => ({
+    eventType: m.e,
+    eventTime: m.E,
+    symbol: m.s,
+    index: m.i,
+    bidBuffer: m.b,
+    askBuffer: m.a,
+    bidRate: m.B,
+    askRate: m.A,
+    autoExchangeBidBuffer: m.q,
+    autoExchangeAskBuffer: m.Q,
+    autoExchangeBidRate: m.g,
+    autoExchangeAskRate: m.G,
+})
+
+const futuresAssetIndex = (payload, cb, transform = true) => {
+    const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
+        const w = openWebSocket(
+            `${endpoints.futuresMarket}/${symbol.toLowerCase()}@assetIndex`,
+        )
+
+        w.onmessage = msg => {
+            const obj = JSONbig.parse(msg.data)
+            cb(transform ? futuresAssetIndexTransform(obj) : obj)
+        }
+
+        return w
+    })
+
+    return options =>
+        cache.forEach(w =>
+            w.close(1000, 'Close handle was called', { keepClosed: true, ...options }),
+        )
+}
+
+const futuresAllAssetIndex = (cb, transform = true) => {
+    const w = openWebSocket(`${endpoints.futuresMarket}/!assetIndex@arr`)
+
+    w.onmessage = msg => {
+        const arr = JSONbig.parse(msg.data)
+        cb(transform ? arr.map(futuresAssetIndexTransform) : arr)
+    }
+
+    return options => w.close(1000, 'Close handle was called', { keepClosed: true, ...options })
+}
+
 const tradesTransform = m => ({
     eventType: m.e,
     eventTime: m.E,
@@ -1363,6 +1580,14 @@ export default opts => {
             aggTrades(payload, cb, transform, 'delivery'),
         futuresLiquidations,
         futuresAllLiquidations,
+        futuresBookTicker,
+        futuresAllBookTickers,
+        futuresMarkPrice,
+        futuresContinuousCandles,
+        futuresCompositeIndex,
+        futuresContractInfo,
+        futuresAssetIndex,
+        futuresAllAssetIndex,
         futuresUser: user(opts, 'futures'),
         deliveryUser: user(opts, 'delivery'),
         futuresCustomSubStream: (payload, cb) => customSubStream(payload, cb, 'futures'),
