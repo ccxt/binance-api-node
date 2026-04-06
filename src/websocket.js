@@ -222,7 +222,11 @@ const candles = (payload, interval, cb, transform = true, variator) => {
     const cache = (Array.isArray(payload) ? payload : [payload]).map(symbol => {
         const w = openWebSocket(
             `${
-                variator ? endpoints[variator] : endpoints.base
+                variator === 'futures'
+                    ? endpoints.futuresMarket
+                    : variator === 'delivery'
+                      ? endpoints.delivery
+                      : endpoints.base
             }/${symbol.toLowerCase()}@kline_${interval}`,
         )
         w.onmessage = msg => {
@@ -378,7 +382,7 @@ const ticker = (payload, cb, transform = true, variator) => {
         const w = openWebSocket(
             `${
                 variator === 'futures'
-                    ? endpoints.futures
+                    ? endpoints.futuresMarket
                     : variator === 'delivery'
                       ? endpoints.delivery
                       : endpoints.base
@@ -411,7 +415,7 @@ const allTickers = (cb, transform = true, variator) => {
     const w = new openWebSocket(
         `${
             variator === 'futures'
-                ? endpoints.futures
+                ? endpoints.futuresMarket
                 : variator === 'delivery'
                   ? endpoints.delivery
                   : endpoints.base
@@ -561,7 +565,7 @@ const aggTrades = (payload, cb, transform = true, variator) => {
         const w = openWebSocket(
             `${
                 variator === 'futures'
-                    ? endpoints.futures
+                    ? endpoints.futuresMarket
                     : variator === 'delivery'
                       ? endpoints.delivery
                       : endpoints.base
