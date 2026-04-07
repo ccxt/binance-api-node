@@ -298,6 +298,76 @@ export interface FuturesAllMarkPricesPayload {
   updateSpeed?: '1s' | '3s';
 }
 
+// Futures mark price payload (individual symbol)
+export interface FuturesMarkPricePayload {
+  symbol: string;
+  updateSpeed?: '1s';
+}
+
+// Futures continuous candles payload
+export interface FuturesContinuousCandlesPayload {
+  pair: string;
+  contractType: string;
+}
+
+// Futures continuous candle event
+export interface FuturesContinuousCandleEvent extends CandleEvent {
+  pair: string;
+  contractType: string;
+}
+
+// Futures composite index event
+export interface FuturesCompositeIndexEvent {
+  eventType: string;
+  eventTime: number;
+  symbol: string;
+  price: string;
+  composition: {
+    baseAsset: string;
+    quoteAsset: string;
+    weightInQuantity: string;
+    weightInPercentage: string;
+    indexPrice: string;
+  }[];
+}
+
+// Futures contract info event
+export interface FuturesContractInfoEvent {
+  eventType: string;
+  eventTime: number;
+  symbol: string;
+  pair: string;
+  contractType: string;
+  deliveryDate: number;
+  onboardDate: number;
+  contractStatus: string;
+  brackets: {
+    notionalBracket: number;
+    floorNotional: number;
+    capNotional: number;
+    maintenanceRatio: string;
+    auxiliaryNumber: number;
+    minLeverage: number;
+    maxLeverage: number;
+  }[];
+}
+
+// Futures asset index event
+export interface FuturesAssetIndexEvent {
+  eventType: string;
+  eventTime: number;
+  symbol: string;
+  index: string;
+  bidBuffer: string;
+  askBuffer: string;
+  bidRate: string;
+  askRate: string;
+  autoExchangeBidBuffer: string;
+  autoExchangeAskBuffer: string;
+  autoExchangeBidRate: string;
+  autoExchangeAskRate: string;
+}
+
 export interface BinanceWebSocket {
   // Spot
   depth(payload: string | string[], cb: (data: DepthEvent) => void, transform?: boolean): CleanupFn;
@@ -326,6 +396,14 @@ export interface BinanceWebSocket {
   futuresAggTrades(payload: string | string[], cb: (data: FuturesAggTradeEvent) => void, transform?: boolean): CleanupFn;
   futuresLiquidations(payload: string | string[], cb: (data: FuturesLiquidationEvent) => void, transform?: boolean): CleanupFn;
   futuresAllLiquidations(cb: (data: FuturesLiquidationEvent) => void, transform?: boolean): CleanupFn;
+  futuresBookTicker(payload: string | string[], cb: (data: BookTickerEvent) => void, transform?: boolean): CleanupFn;
+  futuresAllBookTickers(cb: (data: BookTickerEvent) => void, transform?: boolean): CleanupFn;
+  futuresMarkPrice(payload: string | string[] | FuturesMarkPricePayload | FuturesMarkPricePayload[], cb: (data: FuturesMarkPriceEvent) => void, transform?: boolean): CleanupFn;
+  futuresContinuousCandles(payload: FuturesContinuousCandlesPayload, interval: string, cb: (data: FuturesContinuousCandleEvent) => void, transform?: boolean): CleanupFn;
+  futuresCompositeIndex(payload: string | string[], cb: (data: FuturesCompositeIndexEvent) => void, transform?: boolean): CleanupFn;
+  futuresContractInfo(cb: (data: FuturesContractInfoEvent) => void, transform?: boolean): CleanupFn;
+  futuresAssetIndex(payload: string | string[], cb: (data: FuturesAssetIndexEvent) => void, transform?: boolean): CleanupFn;
+  futuresAllAssetIndex(cb: (data: FuturesAssetIndexEvent[]) => void, transform?: boolean): CleanupFn;
   futuresUser(cb: (data: any) => void, transform?: boolean): Promise<CleanupFn>;
   futuresCustomSubStream(payload: string | string[], cb: (data: any) => void): CleanupFn;
   futuresAllMarkPrices(payload: FuturesAllMarkPricesPayload, cb: (data: FuturesMarkPriceEvent[]) => void): CleanupFn;

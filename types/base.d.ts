@@ -10,6 +10,9 @@ export interface BinanceRestOptions {
 
   wsBase?: string;
   wsFutures?: string;
+  wsFuturesPublic?: string;
+  wsFuturesMarket?: string;
+  wsFuturesPrivate?: string;
   wsDelivery?: string;
   wsApi?: string;
   wsApiTestnet?: string;
