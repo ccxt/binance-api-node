@@ -166,8 +166,8 @@ test.serial('[REST] Futures CancelOrder', async t => {
     t.is(obj.orderId, '34234234')
 })
 
-const CONTRACT_PREFIX = 'x-ftGmvgAN'
-const SPOT_PREFIX = 'x-B3AUXNYV'
+const CONTRACT_PREFIX = 'x-cvBPrNm9'
+const SPOT_PREFIX = 'x-TKT5PX2F'
 
 test.serial('[REST] MarketBuy', async t => {
     await binance.order({ symbol: 'LTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.5 })
