@@ -162,11 +162,11 @@ const checkParams = (name, payload, requires = []) => {
 }
 
 const spotP = () => {
-    return `x-B3AUXNYV${uuid22()}`
+    return `x-TKT5PX2F${uuid22()}`
 }
 
 const futuresP = () => {
-    return `x-ftGmvgAN${uuid22()}`
+    return `x-cvBPrNm9${uuid22()}`
 }
 
 /**
